@@ -43,7 +43,7 @@ class Projects extends Component {
                             Code for this website which was made with only REACT!
                         </CardText>
                         <CardActions border>
-                            <Button colored href="https://github.com/TitusBuchanan/ReactProjects">Github</Button>
+                            <Button colored href="https://github.com/TitusBuchanan/PortfolioWebsite">Github</Button>
                         </CardActions>
                         <CardMenu style={{color: '#fff'}}>
                             <IconButton name='share' />

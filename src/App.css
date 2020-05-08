@@ -128,3 +128,11 @@ height: 100%;
     font-size: 50px;
     padding-right: 5rem;
 }
+
+
+/*Resume Page Css*/
+
+.resume-right-col {
+    background: rgb(71, 70, 69);
+    color:whitesmoke;
+}
