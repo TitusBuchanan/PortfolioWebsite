@@ -3,7 +3,7 @@ import {Grid, Cell} from 'react-mdl'
 import Education from './education'
 import Experience from './experience'
 import Skills from './skills'
-
+import Logo from '../Assets/logo.png'
 class Resume extends Component {
     render(){
         return(
@@ -12,14 +12,14 @@ class Resume extends Component {
                     <Cell col={4}>
                         <div style={{textAlign:'center'}}>
                             <img
-                                src="https://png.pngtree.com/png-clipart/20190924/original/pngtree-user-vector-avatar-png-image_4830521.jpg"
+                                src={Logo}
                                 alt="avatar"
                                 style={{height:'200px'}}
                             />
                         </div>
 
                         <h2 style={{paddingTop:'2em'}}>Titus Buchanan Jr</h2>
-                        <h4 style={{color:'grey'}}>Programmer</h4>
+                        <h4 style={{color:'grey'}}>Full Stack Web Developer</h4>
                         <hr style={{borderTop:'3px solid #833fb2', width:'50%'}}></hr>
                         <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised </p>
                         <hr style={{borderTop:'3px solid #833fb2', width:'50%'}}></hr>
@@ -28,7 +28,7 @@ class Resume extends Component {
                         <h5>Phone</h5>
                         <p>(908)-418-3062</p>
                         <h5>Web</h5>
-                        <p>mywebsite.com</p>
+                        <p>titusbuchanan.com</p>
                         <hr style={{borderTop:'3px solid #833fb2', width:'50%'}}></hr>
 
 
