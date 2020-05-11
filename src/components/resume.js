@@ -87,6 +87,10 @@ class Resume extends Component {
                             skill="Java"
                             progress={75}
                         />
+                        <Skills 
+                            skill="Phython"
+                            progress={40}
+                        />
 
 
 
