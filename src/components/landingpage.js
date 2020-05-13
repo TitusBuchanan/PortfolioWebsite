@@ -8,6 +8,7 @@ class Landing extends Component {
         return(
             <div style={{width: '100%', margin: 'auto'}}>
                 <Grid className="landing-grid">
+                    
                     <Cell col={12}>
                         <img 
                             src="https:cdn4.iconfinder.com/data/icons/business-avatar-3/64/Business-Man-Avatar_2-512.png"

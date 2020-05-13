@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {Grid,Cell} from 'react-mdl';
+import Fade from 'react-reveal/Fade'
 
 class About extends Component {
     render(){
