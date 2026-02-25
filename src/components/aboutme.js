@@ -1,38 +1,28 @@
 import React, {Component} from 'react';
 
 class CountUp extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {value: 0};
-  }
+  constructor(props) { super(props); this.state = {v:0}; }
   componentDidMount() {
-    const target = parseFloat(this.props.to);
-    const duration = 2000;
-    const start = Date.now();
-    this.raf = requestAnimationFrame(function tick() {
-      const elapsed = Date.now() - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      this.setState({value: eased * target});
-      if (progress < 1) this.raf = requestAnimationFrame(tick.bind(this));
-    }.bind(this));
+    const t = parseFloat(this.props.to), d = 2000, s = Date.now();
+    const tick = () => {
+      const p = Math.min((Date.now()-s)/d,1);
+      this.setState({v: (1-Math.pow(1-p,3)) * t});
+      if(p<1) this.raf = requestAnimationFrame(tick);
+    };
+    this.raf = requestAnimationFrame(tick);
   }
   componentWillUnmount() { cancelAnimationFrame(this.raf); }
   render() {
-    const v = this.state.value;
-    const display = this.props.suffix === '%'
-      ? v.toFixed(1) + '%'
-      : this.props.suffix === '+'
-        ? Math.round(v) + '+'
-        : Math.round(v).toString();
-    return <span>{display}</span>;
+    return this.props.suffix === '%'
+      ? <span>{this.state.v.toFixed(1)}<span className="orange">%</span></span>
+      : <span>{Math.round(this.state.v)}<span className="orange">{this.props.suffix}</span></span>;
   }
 }
 
-const allSkills = [
+const tags = [
   'AWS','Terraform','Kubernetes','Docker','Jenkins','Python','Bash','Ansible',
   'Prometheus','Grafana','CloudWatch','GitHub Actions','Helm','Linux','Azure',
-  'CloudFormation','IAM','VPC','PostgreSQL','MongoDB','Jira','Agile','Maven','Groovy'
+  'CloudFormation','IAM','VPC','PostgreSQL','MongoDB','Jira','Agile'
 ];
 
 class About extends Component {
@@ -40,45 +30,43 @@ class About extends Component {
     return (
       <div className="page">
         <div className="about-page">
-          <div style={{marginBottom:'2rem'}}>
-            <span className="resume-section-label">About</span>
-            <h2 className="resume-section-title">TITUS BUCHANAN JR</h2>
+          <div className="about-header">
+            <div className="about-title">ABO<span className="orange">UT</span></div>
+            <div className="meta" style={{paddingTop:'1rem'}}>TITUS BUCHANAN JR<br/>DEVOPS ENGINEER<br/>PROVIDENCE, RI</div>
           </div>
 
-          <div className="about-grid">
+          <div className="about-body">
             <div className="about-cell">
-              <div className="about-cell-label">Years of Experience</div>
-              <div className="about-cell-value"><CountUp to={4} suffix="+" /></div>
-              <div className="about-cell-desc">Designing, automating, and scaling cloud-native infrastructure across AWS, Azure, and Kubernetes.</div>
+              <div className="about-cell-label meta">Years of Experience</div>
+              <div className="about-cell-num"><CountUp to={4} suffix="+" /></div>
+              <p>Designing, automating, and scaling cloud-native infrastructure across AWS, Azure, and Kubernetes.</p>
             </div>
             <div className="about-cell">
-              <div className="about-cell-label">Uptime Achieved</div>
-              <div className="about-cell-value"><CountUp to={99.9} suffix="%" /></div>
-              <div className="about-cell-desc">Multi-region Kubernetes deployments on EKS with automated failover and monitoring.</div>
+              <div className="about-cell-label meta">Uptime Achieved</div>
+              <div className="about-cell-num"><CountUp to={99.9} suffix="%" /></div>
+              <p>Multi-region Kubernetes deployments on EKS with automated failover and monitoring.</p>
             </div>
             <div className="about-cell">
-              <div className="about-cell-label">Faster Deployments</div>
-              <div className="about-cell-value"><CountUp to={40} suffix="%" /></div>
-              <div className="about-cell-desc">Automated provisioning with Terraform, reducing manual setup time dramatically.</div>
+              <div className="about-cell-label meta">Faster Deployments</div>
+              <div className="about-cell-num"><CountUp to={40} suffix="%" /></div>
+              <p>Automated provisioning with Terraform, reducing manual setup time dramatically.</p>
             </div>
             <div className="about-cell">
-              <div className="about-cell-label">Cost Reduction</div>
-              <div className="about-cell-value"><CountUp to={25} suffix="%" /></div>
-              <div className="about-cell-desc">Serverless architectures with AWS Lambda improving elastic scalability.</div>
+              <div className="about-cell-label meta">Cost Reduction</div>
+              <div className="about-cell-num"><CountUp to={25} suffix="%" /></div>
+              <p>Serverless architectures with AWS Lambda improving elastic scalability.</p>
             </div>
-            <div className="about-cell about-cell-wide">
-              <div className="about-cell-label">Professional Summary</div>
-              <p className="about-summary">
+            <div className="about-cell about-wide">
+              <div className="about-cell-label meta">Professional Summary</div>
+              <p style={{fontStyle:'italic',lineHeight:'1.8',maxWidth:'700px'}}>
                 DevOps Engineer with 4+ years of experience building CI/CD pipelines,
-                implementing Infrastructure as Code with Terraform, and enhancing system
-                observability with Grafana and Prometheus. Adept at collaborating with
-                cross-functional teams to troubleshoot complex cloud and container
+                implementing Infrastructure as Code with Terraform, and enhancing
+                system observability with Grafana and Prometheus. Adept at collaborating
+                with cross-functional teams to troubleshoot complex cloud and container
                 challenges in fast-paced environments.
               </p>
-              <div className="about-skills-row">
-                {allSkills.map(s => (
-                  <span className="about-skill" key={s}>{s}</span>
-                ))}
+              <div className="about-tags">
+                {tags.map(t => <span className="about-tag" key={t}>{t}</span>)}
               </div>
             </div>
           </div>

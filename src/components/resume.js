@@ -12,18 +12,15 @@ class Resume extends Component {
     return (
       <div className="page">
         <div className="resume-page">
-          <span className="resume-section-label">Resume</span>
-          <h2 className="resume-section-title">EXPERIENCE</h2>
+          <div className="resume-label meta">Resume</div>
+          <div className="resume-title">EXPERI<span style={{color:'var(--orange)'}}>ENCE</span></div>
 
-          <div className="exp-block">
+          <div className="exp-item">
+            <div><div className="exp-year">2022</div><div className="exp-period meta">Sep 2022 — Feb 2025</div></div>
             <div>
-              <div className="exp-year">2022</div>
-              <div className="exp-year-sub">Sep 2022 — Feb 2025</div>
-            </div>
-            <div className="exp-content">
-              <h3>DevOps Engineer</h3>
-              <h4>Moody's — New York, NY</h4>
-              <ul>
+              <div className="exp-role">DevOps Engineer</div>
+              <div className="exp-company">Moody's — New York, NY</div>
+              <ul className="exp-list">
                 <li>Orchestrated cloud infrastructure on AWS using Terraform — reduced manual provisioning time by 40%</li>
                 <li>Deployed microservices on Kubernetes (EKS), achieving 99.9% availability across multi-region deployments</li>
                 <li>Engineered CI/CD pipelines using Jenkins and Docker, accelerating release cycles by 30%</li>
@@ -33,15 +30,12 @@ class Resume extends Component {
             </div>
           </div>
 
-          <div className="exp-block">
+          <div className="exp-item">
+            <div><div className="exp-year">2021</div><div className="exp-period meta">Aug 2021 — Jun 2022</div></div>
             <div>
-              <div className="exp-year">2021</div>
-              <div className="exp-year-sub">Aug 2021 — Jun 2022</div>
-            </div>
-            <div className="exp-content">
-              <h3>DevOps / Infrastructure Engineer</h3>
-              <h4>The Barnes Group — Peabody, MA</h4>
-              <ul>
+              <div className="exp-role">DevOps / Infrastructure Engineer</div>
+              <div className="exp-company">The Barnes Group — Peabody, MA</div>
+              <ul className="exp-list">
                 <li>Led IoT firmware update system deployment using Docker, Azure, and Ubuntu — reduced deployment windows by 35%</li>
                 <li>Automated builds with Azure CLI and Jenkins, cutting manual intervention by 50%</li>
                 <li>Integrated Jira with GitHub and Jenkins, improving team productivity by 20%</li>
@@ -50,15 +44,12 @@ class Resume extends Component {
             </div>
           </div>
 
-          <div className="exp-block">
+          <div className="exp-item">
+            <div><div className="exp-year">2020</div><div className="exp-period meta">Nov 2020 — Mar 2021</div></div>
             <div>
-              <div className="exp-year">2020</div>
-              <div className="exp-year-sub">Nov 2020 — Mar 2021</div>
-            </div>
-            <div className="exp-content">
-              <h3>Junior DevOps Engineer</h3>
-              <h4>Orgbubble — Providence, RI</h4>
-              <ul>
+              <div className="exp-role">Junior DevOps Engineer</div>
+              <div className="exp-company">Orgbubble — Providence, RI</div>
+              <ul className="exp-list">
                 <li>Built and maintained RESTful APIs and server configurations using JavaScript and MongoDB</li>
                 <li>Contributed to automation initiatives that reduced repetitive tasks</li>
               </ul>
@@ -66,30 +57,23 @@ class Resume extends Component {
           </div>
 
           <div style={{marginTop:'3rem'}}>
-            <span className="resume-section-label">Education</span>
-            <h2 className="resume-section-title">DEGREES</h2>
-
-            <div className="edu-block">
-              <div>
-                <div className="edu-name">Br.S in Computer Science</div>
-                <div className="edu-school">CareerDevs Computer Science Institute — Providence, RI</div>
-              </div>
+            <div className="resume-label meta">Education</div>
+            <div className="resume-title">DEGR<span style={{color:'var(--orange)'}}>EES</span></div>
+            <div className="edu-row">
+              <div><div className="edu-name">Br.S in Computer Science</div><div className="edu-school">CareerDevs Computer Science Institute — Providence, RI</div></div>
               <div className="edu-year">2021</div>
             </div>
-            <div className="edu-block">
-              <div>
-                <div className="edu-name">Bachelor of Arts in Business</div>
-                <div className="edu-school">Saint Anselm College — Manchester, NH</div>
-              </div>
+            <div className="edu-row">
+              <div><div className="edu-name">Bachelor of Arts in Business</div><div className="edu-school">Saint Anselm College — Manchester, NH</div></div>
               <div className="edu-year">2014</div>
             </div>
           </div>
 
           <div style={{marginTop:'3rem'}}>
-            <span className="resume-section-label">Technical</span>
-            <h2 className="resume-section-title">SKILLS</h2>
-            <div className="skills-bar">
-              {skills.map(s => <span className="skill-pill" key={s}>{s}</span>)}
+            <div className="resume-label meta">Technical</div>
+            <div className="resume-title">SKI<span style={{color:'var(--orange)'}}>LLS</span></div>
+            <div className="skills-wrap">
+              {skills.map(s => <span className="skill-tag" key={s}>{s}</span>)}
             </div>
           </div>
         </div>

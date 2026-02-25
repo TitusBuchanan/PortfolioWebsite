@@ -1,105 +1,57 @@
 import React, {Component} from 'react';
 import { Link } from 'react-router-dom';
 
-const SKILLS = [
-  {name:'AWS', time:'04:00'},
-  {name:'Terraform', time:'03:45'},
-  {name:'Kubernetes', time:'03:30'},
-  {name:'Docker', time:'03:15'},
-  {name:'Jenkins', time:'02:50'}
-];
-
 class Landing extends Component {
-  constructor(props) {
-    super(props);
-    const now = new Date();
-    this.state = {
-      hours: now.getHours(), minutes: now.getMinutes(), seconds: now.getSeconds(),
-      activeSkill: 0, prevDigits: {h:'', m:'', s:''}
-    };
-  }
-
-  componentDidMount() {
-    this.timer = setInterval(() => {
-      const now = new Date();
-      this.setState({
-        hours: now.getHours(), minutes: now.getMinutes(), seconds: now.getSeconds()
-      });
-    }, 1000);
-    this.skillTimer = setInterval(() => {
-      this.setState(prev => ({activeSkill: (prev.activeSkill + 1) % SKILLS.length}));
-    }, 4000);
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.timer);
-    clearInterval(this.skillTimer);
-  }
-
-  pad(n) { return n < 10 ? '0' + n : '' + n; }
-
   render() {
-    const {hours, minutes, seconds, activeSkill} = this.state;
-    const h = this.pad(hours);
-    const m = this.pad(minutes);
-    const s = this.pad(seconds);
-
-    const now = new Date();
-    const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    const dayName = dayNames[now.getDay()];
-    const monthName = monthNames[now.getMonth()];
-    const date = now.getDate();
-
     return (
       <div className="page">
-        <div className="hero-split">
-          <div className="hero-top">
-            <div className="hero-labels">
-              <span className="hero-label">hours</span>
-              <span className="hero-label">minutes</span>
-              <span className="hero-label">seconds</span>
-            </div>
+        <section className="hero">
+          {/* Decorative elements */}
+          <div className="hero-orb" />
+          <div className="hero-cross"><div className="hero-cross-dot" /></div>
+          <div className="hero-scribble">Titus B</div>
 
-            <div className="hero-clock">
-              <div className="clock-digit-group">
-                <span className="clock-digit" key={'h'+h}>{h}</span>
-              </div>
-              <span className="clock-separator">:</span>
-              <div className="clock-digit-group">
-                <span className="clock-digit" key={'m'+m}>{m}</span>
-              </div>
-              <span className="clock-separator">:</span>
-              <span className="clock-seconds" key={'s'+s}>{s}</span>
-            </div>
+          {/* Scattered metadata */}
+          <div className="hero-meta-tl meta">LEGAL<br/>© 2025</div>
+          <div className="hero-meta-tr meta">UPDATES<br/>INITIATIVES 0.422</div>
+          <div className="hero-meta-ml meta">FALL<br/>IN 27/298.09</div>
+          <div className="hero-meta-br meta">PROVIDENCE<br/>RI, USA</div>
 
-            <div className="tz-bar">
-              {SKILLS.map((sk, i) => (
-                <div
-                  className={'tz-item' + (i === activeSkill ? ' active' : '')}
-                  key={sk.name}
-                  onClick={() => this.setState({activeSkill: i})}
-                >
-                  <span className="tz-name">{sk.name}</span>
-                  <span className="tz-time">{sk.time}</span>
-                </div>
-              ))}
+          {/* Top giant text */}
+          <div className="hero-top-text">DEVOPS</div>
+
+          {/* Center */}
+          <div className="hero-center">
+            <div className="hero-center-visual">
+              <div className="hero-center-visual-text">CLOUD<br/>NATIVE<br/>INFRA</div>
+            </div>
+            <div className="hero-center-info">
+              <p className="hero-desc">
+                Building seamless cloud infrastructure and
+                scalable DevOps pipelines, blending automation
+                with reliability to transform deployments into
+                efficient, secure, and production-ready systems.
+              </p>
+              <div className="meta" style={{marginBottom:'1rem'}}>
+                4+ YEARS EXPERIENCE<br/>
+                AWS / TERRAFORM / KUBERNETES
+              </div>
+              <Link to="/projects" className="bracket-btn">VIEW WORK</Link>
             </div>
           </div>
 
-          <div className="hero-bottom">
-            <div className="hero-bottom-left">
-              <div className="hero-location">
-                DevOps Engineer,<br/>
-                <Link to="/projects" style={{opacity:0.7}}>View Projects →</Link>
-              </div>
-            </div>
-            <div className="hero-bottom-right">
-              <div className="hero-day">{dayName},</div>
-              <div className="hero-date">{monthName} {date}</div>
-            </div>
+          {/* Bottom giant text */}
+          <div className="hero-bottom-text">
+            <span className="white">ENGI</span><span className="orange">NEER</span>
           </div>
-        </div>
+
+          {/* Bottom bar */}
+          <div className="hero-bar">
+            <Link to="/contact" className="bracket-btn">SAY HELLO</Link>
+            <span className="bracket-btn">CLOUD ENGINEERING</span>
+            <Link to="/resume" className="bracket-btn">RESUME</Link>
+          </div>
+        </section>
       </div>
     );
   }
