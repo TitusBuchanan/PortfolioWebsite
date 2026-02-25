@@ -1,105 +1,131 @@
-import React, {Component} from 'react'
-import {Grid, Cell} from 'react-mdl'
-import Education from './education'
-import Experience from './experience'
-import Skills from './skills'
-import Logo from '../Assets/logo.png'
+import React, {Component} from 'react';
+import {Grid, Cell} from 'react-mdl';
+
 class Resume extends Component {
-    render(){
-        return(
-            <div>
-                <Grid>
-                    <Cell col={4}>
-                        <div style={{textAlign:'center'}}>
-                            <img
-                                src={Logo}
-                                alt="avatar"
-                                style={{height:'200px'}}
-                            />
-                        </div>
+  render() {
+    return (
+      <div className="resume-page">
+        <Grid>
+          {/* Sidebar */}
+          <Cell col={4}>
+            <div className="resume-sidebar">
+              <div style={{
+                width: 100, height: 100, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #00d4ff, #7c3aed)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 1.5rem', fontSize: '2.5rem', color: '#0d1117',
+                fontFamily: 'Inter, sans-serif', fontWeight: 800
+              }}>TB</div>
 
-                        <h2 style={{paddingTop:'2em'}}>Titus Buchanan Jr</h2>
-                        <h4 style={{color:'grey'}}>Full Stack Web Developer</h4>
-                        <hr style={{borderTop:'3px solid #833fb2', width:'50%'}}></hr>
-                        <p></p>
-                        <hr style={{borderTop:'3px solid #833fb2', width:'50%'}}></hr>
-                        <h5>Address</h5>
-                        <p>91 Ring Street #3, Providence, RI 02909</p>
-                        <h5>Phone</h5>
-                        <p>(908)-418-3062</p>
-                        <h5>Web</h5>
-                        <p>titusbuchanan.com</p>
-                        <hr style={{borderTop:'3px solid #833fb2', width:'50%'}}></hr>
+              <h2>Titus Buchanan Jr</h2>
+              <h4>DevOps Engineer</h4>
 
-
-
-
-                    </Cell>
-
-                    <Cell className="resume-right-col" col={8}>
-                        <h2>Education</h2>
-
-                        <Education
-                        startYear={2010}
-                        endYear={2014}
-                        schoolName={'Saint Anselm College'}
-                        schoolDescription={'Saint Anselm College is a Benedictine, liberal arts college in Goffstown, New Hampshire. Founded in 1889, it is the third-oldest Catholic college in New England.'}
-                         />
-                         <Education
-                        startYear={2019}
-                        endYear={2020}
-                        schoolName={'CareerDevs Computer Science University'}
-                        schoolDescription={'CareerDevs students graduate with an in-depth understanding of and practical experience with a smorgasbord of the most in-demand technologies in the job market today including C#, Python, JavaScript, Java, C, SQL, object-oriented programming, functional programming, Node.js, React, Redux, React Native, HTML and CSS. Beyond these specific technologies, CareerDevs also trains students to be resourceful problem-solvers by approaching problems as computer scientists. They don’t just train you what you need to know; they train you how to think, setting you up for a lifetime of success beyond the CareerDevs classroom.'}
-                         />
-                         <hr style={{borderTop:'3px solid #e22947'}}></hr>
-
-                         <h2>Experience</h2>
-                         <Experience 
-                             startYear={'November 2019'}
-                             endYear={'March 2020'}
-                             jobName={'Jardine Associates/J&Marketing'}
-                             jobDescription={'Accounts Recivable'}
-                         />
-
-                        <hr style={{borderTop:'3px solid #e22947'}}></hr>
-                        <h2>Skills</h2>
-                        <Skills 
-                            skill="JavaScript"
-                            progress={65}
-                        />
-                        <Skills 
-                            skill="React"
-                            progress={50}
-                        />
-                        <Skills 
-                            skill="HTML/CSS"
-                            progress={70}
-                        />
-                        <Skills 
-                            skill="NodeJS"
-                            progress={85}
-                        />
-                        <Skills 
-                            skill="Git"
-                            progress={75}
-                        />
-                        <Skills 
-                            skill="Java"
-                            progress={75}
-                        />
-                        <Skills 
-                            skill="Phython"
-                            progress={40}
-                        />
-
-
-
-                    </Cell>
-                </Grid>
+              <div className="info-block">
+                <h5>Location</h5>
+                <p>Providence, RI 02909</p>
+                <h5>Phone</h5>
+                <p>(908) 418-3062</p>
+                <h5>Email</h5>
+                <p>titusbuchananjr@gmail.com</p>
+                <h5>LinkedIn</h5>
+                <p>linkedin.com/in/titusbuchanan</p>
+                <h5>GitHub</h5>
+                <p>github.com/TitusBuchanan</p>
+              </div>
             </div>
-        )
-    }
-};
+          </Cell>
 
+          {/* Main Content */}
+          <Cell className="resume-right-col" col={8}>
+
+            {/* Experience */}
+            <h2><span className="section-icon">&#9670;</span> Experience</h2>
+
+            <div className="timeline-item">
+              <p className="timeline-date">September 2022 – February 2025</p>
+              <h4 className="timeline-title">DevOps Engineer</h4>
+              <p className="timeline-subtitle">Moody's — New York, NY</p>
+              <ul className="timeline-bullets">
+                <li>Orchestrated cloud infrastructure on AWS using Terraform, automating deployments for EC2, S3, RDS, and ELB — reduced manual provisioning time by 40%</li>
+                <li>Deployed and managed microservices on Kubernetes (EKS), achieving 99.9% availability across multi-region deployments</li>
+                <li>Engineered CI/CD pipelines using Jenkins and Docker, accelerating release cycles by 30%</li>
+                <li>Implemented serverless architectures with AWS Lambda, reducing monthly infrastructure costs by 25%</li>
+                <li>Developed monitoring dashboards with CloudWatch and Prometheus, improving incident detection by 50%</li>
+              </ul>
+            </div>
+
+            <div className="timeline-item">
+              <p className="timeline-date">August 2021 – June 2022</p>
+              <h4 className="timeline-title">DevOps / Infrastructure Engineer</h4>
+              <p className="timeline-subtitle">The Barnes Group — Peabody, MA</p>
+              <ul className="timeline-bullets">
+                <li>Led deployment of an IoT firmware update system using Docker, Azure, and Ubuntu — reduced deployment windows by 35%</li>
+                <li>Automated application builds and deployments using Azure CLI and Jenkins, cutting manual intervention by 50%</li>
+                <li>Integrated Jira with GitHub and Jenkins to enhance workflow visibility, improving team productivity by 20%</li>
+                <li>Managed virtualized infrastructure using VMware and configured Linux systems for high availability</li>
+              </ul>
+            </div>
+
+            <div className="timeline-item">
+              <p className="timeline-date">November 2020 – March 2021</p>
+              <h4 className="timeline-title">Junior DevOps Engineer</h4>
+              <p className="timeline-subtitle">Orgbubble — Providence, RI</p>
+              <ul className="timeline-bullets">
+                <li>Assisted in building and maintaining RESTful APIs and server configurations using JavaScript and MongoDB</li>
+                <li>Contributed to automation initiatives that reduced repetitive tasks and improved workflow efficiency</li>
+              </ul>
+            </div>
+
+            <hr className="resume-section-divider" />
+
+            {/* Education */}
+            <h2><span className="section-icon">&#9670;</span> Education</h2>
+
+            <div className="timeline-item">
+              <p className="timeline-date">2021</p>
+              <h4 className="timeline-title">Br.S in Computer Science</h4>
+              <p className="timeline-subtitle">CareerDevs Computer Science Institute — Providence, RI</p>
+            </div>
+
+            <div className="timeline-item">
+              <p className="timeline-date">2014</p>
+              <h4 className="timeline-title">Bachelor of Arts in Business</h4>
+              <p className="timeline-subtitle">Saint Anselm College — Manchester, NH</p>
+            </div>
+
+            <hr className="resume-section-divider" />
+
+            {/* Skills */}
+            <h2><span className="section-icon">&#9670;</span> Skills</h2>
+
+            <SkillBar skill="AWS (EC2, S3, EKS, Lambda, CloudFormation)" progress={90} />
+            <SkillBar skill="Terraform / IaC" progress={88} />
+            <SkillBar skill="Kubernetes / Docker / Helm" progress={85} />
+            <SkillBar skill="CI/CD (Jenkins, GitHub Actions, GitLab CI)" progress={85} />
+            <SkillBar skill="Python / Bash / Groovy" progress={80} />
+            <SkillBar skill="Prometheus / Grafana / CloudWatch" progress={82} />
+            <SkillBar skill="Ansible / Configuration Management" progress={78} />
+            <SkillBar skill="Linux / Unix Administration" progress={88} />
+
+          </Cell>
+        </Grid>
+      </div>
+    );
+  }
+}
+
+function SkillBar({skill, progress}) {
+  return (
+    <div className="skill-bar-container">
+      <div className="skill-bar-label">
+        <span>{skill}</span>
+        <span>{progress}%</span>
+      </div>
+      <div className="skill-bar-track">
+        <div className="skill-bar-fill" style={{width: progress + '%'}} />
+      </div>
+    </div>
+  );
+}
 
 export default Resume;
