@@ -34,32 +34,32 @@ class About extends Component {
 
             <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem'}}>
               <div className="about-card">
-                <span className="about-card-icon">☁️</span>
+                <span className="about-card-icon" role="img" aria-label="cloud">☁️</span>
                 <h4>Cloud & IaC</h4>
                 <p>AWS, Azure, Terraform, CloudFormation</p>
               </div>
               <div className="about-card">
-                <span className="about-card-icon">🐳</span>
+                <span className="about-card-icon" role="img" aria-label="containers">🐳</span>
                 <h4>Containers</h4>
                 <p>Docker, Kubernetes, EKS, Helm, Microservices</p>
               </div>
               <div className="about-card">
-                <span className="about-card-icon">🔄</span>
+                <span className="about-card-icon" role="img" aria-label="ci-cd">🔄</span>
                 <h4>CI/CD</h4>
                 <p>Jenkins, GitLab CI, GitHub Actions, Maven</p>
               </div>
               <div className="about-card">
-                <span className="about-card-icon">📊</span>
+                <span className="about-card-icon" role="img" aria-label="observability">📊</span>
                 <h4>Observability</h4>
                 <p>Prometheus, Grafana, CloudWatch, Logging</p>
               </div>
               <div className="about-card">
-                <span className="about-card-icon">⚙️</span>
+                <span className="about-card-icon" role="img" aria-label="automation">⚙️</span>
                 <h4>Automation</h4>
                 <p>Ansible, Python, Bash, Linux Administration</p>
               </div>
               <div className="about-card">
-                <span className="about-card-icon">🔐</span>
+                <span className="about-card-icon" role="img" aria-label="security">🔐</span>
                 <h4>Security</h4>
                 <p>IAM, VPC, DevSecOps, Network Security</p>
               </div>
