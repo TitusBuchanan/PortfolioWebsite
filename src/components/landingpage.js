@@ -1,54 +1,67 @@
 import React, {Component} from 'react';
-import {Grid, Cell} from 'react-mdl';
+import { Link } from 'react-router-dom';
 
-const techTags = [
+const techs = [
   'AWS', 'Terraform', 'Kubernetes', 'Docker', 'Jenkins',
   'Python', 'Bash', 'Ansible', 'Prometheus', 'Grafana',
-  'GitHub Actions', 'Helm', 'Linux'
+  'GitHub Actions', 'Helm', 'Linux', 'Azure', 'CloudFormation'
 ];
 
 class Landing extends Component {
   render() {
     return (
-      <div style={{width: '100%', margin: 'auto'}}>
-        <Grid className="landing-grid">
-          <Cell col={12}>
+      <div className="page">
+        <section className="hero">
+          <div className="hero-mesh" />
+          <div className="hero-grid-lines" />
 
-            <div className="terminal-badge">
-              <span className="prompt">$</span> whoami
+          <div className="hero-content">
+            <div className="hero-badge">
+              <span className="dot" />
+              Open to opportunities
             </div>
 
-            <h1 className="hero-title">
+            <h1>
               Titus Buchanan Jr
               <br />
-              <span className="accent">DevOps Engineer</span>
+              <span className="gr">DevOps Engineer</span>
             </h1>
 
-            <p className="hero-subtitle">
-              4+ years designing, automating, and scaling secure cloud-native
-              infrastructure across AWS, Azure, and Kubernetes environments.
+            <p className="hero-desc">
+              I design, automate, and scale secure cloud-native infrastructure.
+              From CI/CD pipelines to Kubernetes clusters, I build the systems
+              that keep software shipping.
             </p>
 
-            <div className="tech-stack">
-              {techTags.map(tag => (
-                <span className="tech-tag" key={tag}>{tag}</span>
-              ))}
+            <div className="hero-stats">
+              <div className="hero-stat">
+                <div className="hero-stat-value">4+</div>
+                <div className="hero-stat-label">Years Experience</div>
+              </div>
+              <div className="hero-stat">
+                <div className="hero-stat-value">99.9%</div>
+                <div className="hero-stat-label">Uptime Achieved</div>
+              </div>
+              <div className="hero-stat">
+                <div className="hero-stat-value">40%</div>
+                <div className="hero-stat-label">Faster Deploys</div>
+              </div>
             </div>
 
-            <div className="social-links">
-              <a href="https://www.linkedin.com/in/titusbuchanan/" rel="noopener noreferrer" target="_blank">
-                <i className="fa fa-linkedin" aria-hidden="true" />
-              </a>
-              <a href="https://github.com/TitusBuchanan" rel="noopener noreferrer" target="_blank">
-                <i className="fa fa-github" aria-hidden="true" />
-              </a>
-              <a href="mailto:titusbuchananjr@gmail.com" rel="noopener noreferrer" target="_blank">
-                <i className="fa fa-envelope" aria-hidden="true" />
-              </a>
+            <div className="hero-techs">
+              {techs.map(t => <span className="hero-tech" key={t}>{t}</span>)}
             </div>
 
-          </Cell>
-        </Grid>
+            <div className="hero-actions">
+              <Link className="btn-primary" to="/projects">
+                View Projects <span aria-hidden="true">&rarr;</span>
+              </Link>
+              <Link className="btn-outline" to="/contact">
+                Get in Touch
+              </Link>
+            </div>
+          </div>
+        </section>
       </div>
     );
   }

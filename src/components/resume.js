@@ -1,52 +1,48 @@
 import React, {Component} from 'react';
-import {Grid, Cell} from 'react-mdl';
 
 class Resume extends Component {
   render() {
     return (
-      <div className="resume-page">
-        <Grid>
-          {/* Sidebar */}
-          <Cell col={4}>
-            <div className="resume-sidebar">
-              <div style={{
-                width: 100, height: 100, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #00d4ff, #7c3aed)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto 1.5rem', fontSize: '2.5rem', color: '#0d1117',
-                fontFamily: 'Inter, sans-serif', fontWeight: 800
-              }}>TB</div>
+      <div className="page">
+        <div className="resume-page">
+          <span className="section-label">Resume</span>
+          <h2 className="section-title">Experience & <span className="gr">Education</span></h2>
 
-              <h2>Titus Buchanan Jr</h2>
-              <h4>DevOps Engineer</h4>
-
-              <div className="info-block">
-                <h5>Location</h5>
-                <p>Providence, RI 02909</p>
-                <h5>Phone</h5>
-                <p>(908) 418-3062</p>
-                <h5>Email</h5>
-                <p>titusbuchananjr@gmail.com</p>
-                <h5>LinkedIn</h5>
-                <p>linkedin.com/in/titusbuchanan</p>
-                <h5>GitHub</h5>
-                <p>github.com/TitusBuchanan</p>
+          {/* Header Card */}
+          <div className="resume-header">
+            <div className="resume-header-card">
+              <div className="resume-avatar-ring">
+                <div className="resume-avatar-inner">TB</div>
+              </div>
+              <div className="resume-header-info">
+                <h2>Titus Buchanan Jr</h2>
+                <p>DevOps Engineer</p>
+                <div className="resume-meta">
+                  <span><i className="fa fa-map-marker" /> Providence, RI</span>
+                  <span><i className="fa fa-envelope" /> titusbuchananjr@gmail.com</span>
+                  <span><i className="fa fa-phone" /> (908) 418-3062</span>
+                </div>
               </div>
             </div>
-          </Cell>
+          </div>
 
-          {/* Main Content */}
-          <Cell className="resume-right-col" col={8}>
+          {/* Experience */}
+          <div className="resume-section">
+            <div className="resume-section-head">
+              <h3>Experience</h3>
+              <div className="resume-section-line" />
+            </div>
 
-            {/* Experience */}
-            <h2><span className="section-icon">&#9670;</span> Experience</h2>
-
-            <div className="timeline-item">
-              <p className="timeline-date">September 2022 – February 2025</p>
-              <h4 className="timeline-title">DevOps Engineer</h4>
-              <p className="timeline-subtitle">Moody's — New York, NY</p>
-              <ul className="timeline-bullets">
-                <li>Orchestrated cloud infrastructure on AWS using Terraform, automating deployments for EC2, S3, RDS, and ELB — reduced manual provisioning time by 40%</li>
+            <div className="exp-card">
+              <div className="exp-card-top">
+                <div>
+                  <div className="exp-role">DevOps Engineer</div>
+                  <div className="exp-company">Moody's &mdash; New York, NY</div>
+                </div>
+                <span className="exp-date">Sep 2022 &ndash; Feb 2025</span>
+              </div>
+              <ul className="exp-bullets">
+                <li>Orchestrated cloud infrastructure on AWS using Terraform, automating deployments for EC2, S3, RDS, and ELB &mdash; reduced manual provisioning time by 40%</li>
                 <li>Deployed and managed microservices on Kubernetes (EKS), achieving 99.9% availability across multi-region deployments</li>
                 <li>Engineered CI/CD pipelines using Jenkins and Docker, accelerating release cycles by 30%</li>
                 <li>Implemented serverless architectures with AWS Lambda, reducing monthly infrastructure costs by 25%</li>
@@ -54,78 +50,90 @@ class Resume extends Component {
               </ul>
             </div>
 
-            <div className="timeline-item">
-              <p className="timeline-date">August 2021 – June 2022</p>
-              <h4 className="timeline-title">DevOps / Infrastructure Engineer</h4>
-              <p className="timeline-subtitle">The Barnes Group — Peabody, MA</p>
-              <ul className="timeline-bullets">
-                <li>Led deployment of an IoT firmware update system using Docker, Azure, and Ubuntu — reduced deployment windows by 35%</li>
+            <div className="exp-card">
+              <div className="exp-card-top">
+                <div>
+                  <div className="exp-role">DevOps / Infrastructure Engineer</div>
+                  <div className="exp-company">The Barnes Group &mdash; Peabody, MA</div>
+                </div>
+                <span className="exp-date">Aug 2021 &ndash; Jun 2022</span>
+              </div>
+              <ul className="exp-bullets">
+                <li>Led deployment of an IoT firmware update system using Docker, Azure, and Ubuntu &mdash; reduced deployment windows by 35%</li>
                 <li>Automated application builds and deployments using Azure CLI and Jenkins, cutting manual intervention by 50%</li>
                 <li>Integrated Jira with GitHub and Jenkins to enhance workflow visibility, improving team productivity by 20%</li>
                 <li>Managed virtualized infrastructure using VMware and configured Linux systems for high availability</li>
               </ul>
             </div>
 
-            <div className="timeline-item">
-              <p className="timeline-date">November 2020 – March 2021</p>
-              <h4 className="timeline-title">Junior DevOps Engineer</h4>
-              <p className="timeline-subtitle">Orgbubble — Providence, RI</p>
-              <ul className="timeline-bullets">
+            <div className="exp-card">
+              <div className="exp-card-top">
+                <div>
+                  <div className="exp-role">Junior DevOps Engineer</div>
+                  <div className="exp-company">Orgbubble &mdash; Providence, RI</div>
+                </div>
+                <span className="exp-date">Nov 2020 &ndash; Mar 2021</span>
+              </div>
+              <ul className="exp-bullets">
                 <li>Assisted in building and maintaining RESTful APIs and server configurations using JavaScript and MongoDB</li>
                 <li>Contributed to automation initiatives that reduced repetitive tasks and improved workflow efficiency</li>
               </ul>
             </div>
+          </div>
 
-            <hr className="resume-section-divider" />
-
-            {/* Education */}
-            <h2><span className="section-icon">&#9670;</span> Education</h2>
-
-            <div className="timeline-item">
-              <p className="timeline-date">2021</p>
-              <h4 className="timeline-title">Br.S in Computer Science</h4>
-              <p className="timeline-subtitle">CareerDevs Computer Science Institute — Providence, RI</p>
+          {/* Education */}
+          <div className="resume-section">
+            <div className="resume-section-head">
+              <h3>Education</h3>
+              <div className="resume-section-line" />
             </div>
-
-            <div className="timeline-item">
-              <p className="timeline-date">2014</p>
-              <h4 className="timeline-title">Bachelor of Arts in Business</h4>
-              <p className="timeline-subtitle">Saint Anselm College — Manchester, NH</p>
+            <div className="edu-row">
+              <div>
+                <div className="edu-degree">Br.S in Computer Science</div>
+                <div className="edu-school">CareerDevs Computer Science Institute &mdash; Providence, RI</div>
+              </div>
+              <span className="edu-year">2021</span>
             </div>
+            <div className="edu-row">
+              <div>
+                <div className="edu-degree">Bachelor of Arts in Business</div>
+                <div className="edu-school">Saint Anselm College &mdash; Manchester, NH</div>
+              </div>
+              <span className="edu-year">2014</span>
+            </div>
+          </div>
 
-            <hr className="resume-section-divider" />
+          {/* Skills */}
+          <div className="resume-section">
+            <div className="resume-section-head">
+              <h3>Skills</h3>
+              <div className="resume-section-line" />
+            </div>
+            <div className="skills-grid">
+              {[
+                ['AWS (EC2, S3, EKS, Lambda)', 90],
+                ['Terraform / IaC', 88],
+                ['Kubernetes / Docker / Helm', 85],
+                ['CI/CD Pipelines', 85],
+                ['Python / Bash', 80],
+                ['Prometheus / Grafana', 82],
+                ['Ansible', 78],
+                ['Linux Administration', 88]
+              ].map(([name, pct]) => (
+                <div className="skill-row" key={name}>
+                  <span className="skill-name">{name}</span>
+                  <div className="skill-track">
+                    <div className="skill-fill" style={{width: pct + '%'}} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-            {/* Skills */}
-            <h2><span className="section-icon">&#9670;</span> Skills</h2>
-
-            <SkillBar skill="AWS (EC2, S3, EKS, Lambda, CloudFormation)" progress={90} />
-            <SkillBar skill="Terraform / IaC" progress={88} />
-            <SkillBar skill="Kubernetes / Docker / Helm" progress={85} />
-            <SkillBar skill="CI/CD (Jenkins, GitHub Actions, GitLab CI)" progress={85} />
-            <SkillBar skill="Python / Bash / Groovy" progress={80} />
-            <SkillBar skill="Prometheus / Grafana / CloudWatch" progress={82} />
-            <SkillBar skill="Ansible / Configuration Management" progress={78} />
-            <SkillBar skill="Linux / Unix Administration" progress={88} />
-
-          </Cell>
-        </Grid>
+        </div>
       </div>
     );
   }
-}
-
-function SkillBar({skill, progress}) {
-  return (
-    <div className="skill-bar-container">
-      <div className="skill-bar-label">
-        <span>{skill}</span>
-        <span>{progress}%</span>
-      </div>
-      <div className="skill-bar-track">
-        <div className="skill-bar-fill" style={{width: progress + '%'}} />
-      </div>
-    </div>
-  );
 }
 
 export default Resume;

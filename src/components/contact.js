@@ -1,85 +1,55 @@
 import React, {Component} from 'react';
-import {Grid, Cell} from 'react-mdl';
 
 class Contact extends Component {
   render() {
     return (
-      <div className="contact-body">
-        <div className="contact-grid">
-          <Grid>
-            <Cell col={6}>
-              <h2>Get In <span className="accent">Touch</span></h2>
-              <p>
-                I'm always open to discussing new DevOps challenges,
-                cloud architecture opportunities, or ways to improve
-                infrastructure at scale. Feel free to reach out.
-              </p>
+      <div className="page">
+        <div className="contact-page">
+          <span className="section-label">Contact</span>
+          <h2 className="section-title">Let's <span className="gr">connect</span></h2>
+          <p className="contact-cta">
+            I'm always open to discussing new DevOps challenges,
+            cloud architecture opportunities, or ways to improve
+            infrastructure at scale. Feel free to reach out.
+          </p>
 
-              <div className="contact-social">
-                <a href="https://www.linkedin.com/in/titusbuchanan/" target="_blank" rel="noopener noreferrer">
-                  <i className="fa fa-linkedin" aria-hidden="true" />
-                </a>
-                <a href="https://github.com/TitusBuchanan" target="_blank" rel="noopener noreferrer">
-                  <i className="fa fa-github" aria-hidden="true" />
-                </a>
-                <a href="mailto:titusbuchananjr@gmail.com">
-                  <i className="fa fa-envelope" aria-hidden="true" />
-                </a>
+          <div className="contact-cards">
+            <a className="contact-card" href="mailto:titusbuchananjr@gmail.com">
+              <div className="contact-card-icon">
+                <i className="fa fa-envelope" />
               </div>
-            </Cell>
+              <div className="contact-card-label">Email</div>
+              <div className="contact-card-value">titusbuchananjr@gmail.com</div>
+            </a>
 
-            <Cell col={6}>
-              <div className="contact-item">
-                <div className="contact-item-icon">
-                  <i className="fa fa-map-marker" aria-hidden="true" />
-                </div>
-                <div className="contact-item-text">
-                  <h4>Location</h4>
-                  <p>Providence, RI 02909</p>
-                </div>
+            <a className="contact-card" href="tel:+19084183062">
+              <div className="contact-card-icon">
+                <i className="fa fa-phone" />
               </div>
+              <div className="contact-card-label">Phone</div>
+              <div className="contact-card-value">(908) 418-3062</div>
+            </a>
 
-              <div className="contact-item">
-                <div className="contact-item-icon">
-                  <i className="fa fa-phone" aria-hidden="true" />
-                </div>
-                <div className="contact-item-text">
-                  <h4>Phone</h4>
-                  <p>(908) 418-3062</p>
-                </div>
+            <div className="contact-card">
+              <div className="contact-card-icon">
+                <i className="fa fa-map-marker" />
               </div>
+              <div className="contact-card-label">Location</div>
+              <div className="contact-card-value">Providence, RI</div>
+            </div>
+          </div>
 
-              <div className="contact-item">
-                <div className="contact-item-icon">
-                  <i className="fa fa-envelope" aria-hidden="true" />
-                </div>
-                <div className="contact-item-text">
-                  <h4>Email</h4>
-                  <p>titusbuchananjr@gmail.com</p>
-                </div>
-              </div>
-
-              <div className="contact-item">
-                <div className="contact-item-icon">
-                  <i className="fa fa-linkedin" aria-hidden="true" />
-                </div>
-                <div className="contact-item-text">
-                  <h4>LinkedIn</h4>
-                  <p>linkedin.com/in/titusbuchanan</p>
-                </div>
-              </div>
-
-              <div className="contact-item">
-                <div className="contact-item-icon">
-                  <i className="fa fa-github" aria-hidden="true" />
-                </div>
-                <div className="contact-item-text">
-                  <h4>GitHub</h4>
-                  <p>github.com/TitusBuchanan</p>
-                </div>
-              </div>
-            </Cell>
-          </Grid>
+          <div className="contact-bottom">
+            <a className="contact-social-btn" href="https://www.linkedin.com/in/titusbuchanan/" target="_blank" rel="noopener noreferrer">
+              <i className="fa fa-linkedin" />
+            </a>
+            <a className="contact-social-btn" href="https://github.com/TitusBuchanan" target="_blank" rel="noopener noreferrer">
+              <i className="fa fa-github" />
+            </a>
+            <a className="contact-social-btn" href="mailto:titusbuchananjr@gmail.com">
+              <i className="fa fa-envelope-o" />
+            </a>
+          </div>
         </div>
       </div>
     );
