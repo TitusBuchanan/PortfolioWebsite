@@ -5,50 +5,55 @@ class Contact extends Component {
     return (
       <div className="page">
         <div className="contact-page">
-          <span className="section-label">Contact</span>
-          <h2 className="section-title">Let's <span className="gr">connect</span></h2>
-          <p className="contact-cta">
-            I'm always open to discussing new DevOps challenges,
-            cloud architecture opportunities, or ways to improve
-            infrastructure at scale. Feel free to reach out.
-          </p>
+          <div className="contact-left">
+            <div className="contact-headline">LET'S<br/>CONNECT</div>
+            <p className="contact-desc">
+              Open to discussing DevOps challenges, cloud architecture
+              opportunities, or ways to improve infrastructure at scale.
+            </p>
 
-          <div className="contact-cards">
-            <a className="contact-card" href="mailto:titusbuchananjr@gmail.com">
-              <div className="contact-card-icon">
-                <i className="fa fa-envelope" />
+            <div className="contact-info-row">
+              <div className="contact-info-icon"><i className="fa fa-envelope" /></div>
+              <div>
+                <div className="contact-info-label">Email</div>
+                <div className="contact-info-value">titusbuchananjr@gmail.com</div>
               </div>
-              <div className="contact-card-label">Email</div>
-              <div className="contact-card-value">titusbuchananjr@gmail.com</div>
-            </a>
+            </div>
 
-            <a className="contact-card" href="tel:+19084183062">
-              <div className="contact-card-icon">
-                <i className="fa fa-phone" />
+            <div className="contact-info-row">
+              <div className="contact-info-icon"><i className="fa fa-phone" /></div>
+              <div>
+                <div className="contact-info-label">Phone</div>
+                <div className="contact-info-value">(908) 418-3062</div>
               </div>
-              <div className="contact-card-label">Phone</div>
-              <div className="contact-card-value">(908) 418-3062</div>
-            </a>
+            </div>
 
-            <div className="contact-card">
-              <div className="contact-card-icon">
-                <i className="fa fa-map-marker" />
+            <div className="contact-info-row">
+              <div className="contact-info-icon"><i className="fa fa-map-marker" /></div>
+              <div>
+                <div className="contact-info-label">Location</div>
+                <div className="contact-info-value">Providence, RI</div>
               </div>
-              <div className="contact-card-label">Location</div>
-              <div className="contact-card-value">Providence, RI</div>
             </div>
           </div>
 
-          <div className="contact-bottom">
-            <a className="contact-social-btn" href="https://www.linkedin.com/in/titusbuchanan/" target="_blank" rel="noopener noreferrer">
-              <i className="fa fa-linkedin" />
-            </a>
-            <a className="contact-social-btn" href="https://github.com/TitusBuchanan" target="_blank" rel="noopener noreferrer">
-              <i className="fa fa-github" />
-            </a>
-            <a className="contact-social-btn" href="mailto:titusbuchananjr@gmail.com">
-              <i className="fa fa-envelope-o" />
-            </a>
+          <div className="contact-right">
+            <div className="contact-right-content">
+              <div className="contact-big-text">
+                DEVOPS<br/>ENGINEER<br/>PROVIDENCE, RI
+              </div>
+              <div className="contact-social-row">
+                <a className="contact-social-link" href="https://www.linkedin.com/in/titusbuchanan/" target="_blank" rel="noopener noreferrer">
+                  <i className="fa fa-linkedin" />
+                </a>
+                <a className="contact-social-link" href="https://github.com/TitusBuchanan" target="_blank" rel="noopener noreferrer">
+                  <i className="fa fa-github" />
+                </a>
+                <a className="contact-social-link" href="mailto:titusbuchananjr@gmail.com">
+                  <i className="fa fa-envelope-o" />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>

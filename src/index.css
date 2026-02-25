@@ -1,57 +1,29 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg-primary: #06080d;
-  --bg-secondary: #0c0f16;
-  --bg-card: #111520;
-  --bg-card-hover: #161c2a;
-  --border: #1e2536;
-  --border-hover: #2d3654;
-  --text-primary: #eaf0f6;
-  --text-secondary: #8892a4;
-  --text-muted: #5c6478;
-  --accent-cyan: #38bdf8;
-  --accent-violet: #a78bfa;
-  --accent-emerald: #34d399;
-  --accent-amber: #fbbf24;
-  --gradient-primary: linear-gradient(135deg, #38bdf8, #a78bfa);
-  --gradient-glow: linear-gradient(135deg, rgba(56,189,248,0.15), rgba(167,139,250,0.15));
-  --glass-bg: rgba(17, 21, 32, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.06);
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
-  --font-sans: 'Space Grotesk', 'Inter', -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  --font-body: 'Inter', -apple-system, sans-serif;
+  --cream: #edebe4;
+  --cream-dark: #e0ddd4;
+  --black: #0a0a0a;
+  --dark: #1a1a1a;
+  --gray: #6b6b6b;
+  --gray-light: #999;
+  --white: #fff;
+  --accent: #c8ff00;
+  --font-display: 'Bebas Neue', 'Arial Black', sans-serif;
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-body);
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  background: var(--cream);
+  color: var(--black);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
 
-a {
-  color: var(--accent-cyan);
-  text-decoration: none;
-}
-
-::selection {
-  background: rgba(56, 189, 248, 0.25);
-  color: #fff;
-}
+::selection { background: var(--black); color: var(--cream); }
+a { color: inherit; text-decoration: none; }

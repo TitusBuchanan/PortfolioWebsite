@@ -1,67 +1,105 @@
 import React, {Component} from 'react';
 import { Link } from 'react-router-dom';
 
-const techs = [
-  'AWS', 'Terraform', 'Kubernetes', 'Docker', 'Jenkins',
-  'Python', 'Bash', 'Ansible', 'Prometheus', 'Grafana',
-  'GitHub Actions', 'Helm', 'Linux', 'Azure', 'CloudFormation'
+const SKILLS = [
+  {name:'AWS', time:'04:00'},
+  {name:'Terraform', time:'03:45'},
+  {name:'Kubernetes', time:'03:30'},
+  {name:'Docker', time:'03:15'},
+  {name:'Jenkins', time:'02:50'}
 ];
 
 class Landing extends Component {
+  constructor(props) {
+    super(props);
+    const now = new Date();
+    this.state = {
+      hours: now.getHours(), minutes: now.getMinutes(), seconds: now.getSeconds(),
+      activeSkill: 0, prevDigits: {h:'', m:'', s:''}
+    };
+  }
+
+  componentDidMount() {
+    this.timer = setInterval(() => {
+      const now = new Date();
+      this.setState({
+        hours: now.getHours(), minutes: now.getMinutes(), seconds: now.getSeconds()
+      });
+    }, 1000);
+    this.skillTimer = setInterval(() => {
+      this.setState(prev => ({activeSkill: (prev.activeSkill + 1) % SKILLS.length}));
+    }, 4000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timer);
+    clearInterval(this.skillTimer);
+  }
+
+  pad(n) { return n < 10 ? '0' + n : '' + n; }
+
   render() {
+    const {hours, minutes, seconds, activeSkill} = this.state;
+    const h = this.pad(hours);
+    const m = this.pad(minutes);
+    const s = this.pad(seconds);
+
+    const now = new Date();
+    const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const dayName = dayNames[now.getDay()];
+    const monthName = monthNames[now.getMonth()];
+    const date = now.getDate();
+
     return (
       <div className="page">
-        <section className="hero">
-          <div className="hero-mesh" />
-          <div className="hero-grid-lines" />
-
-          <div className="hero-content">
-            <div className="hero-badge">
-              <span className="dot" />
-              Open to opportunities
+        <div className="hero-split">
+          <div className="hero-top">
+            <div className="hero-labels">
+              <span className="hero-label">hours</span>
+              <span className="hero-label">minutes</span>
+              <span className="hero-label">seconds</span>
             </div>
 
-            <h1>
-              Titus Buchanan Jr
-              <br />
-              <span className="gr">DevOps Engineer</span>
-            </h1>
-
-            <p className="hero-desc">
-              I design, automate, and scale secure cloud-native infrastructure.
-              From CI/CD pipelines to Kubernetes clusters, I build the systems
-              that keep software shipping.
-            </p>
-
-            <div className="hero-stats">
-              <div className="hero-stat">
-                <div className="hero-stat-value">4+</div>
-                <div className="hero-stat-label">Years Experience</div>
+            <div className="hero-clock">
+              <div className="clock-digit-group">
+                <span className="clock-digit" key={'h'+h}>{h}</span>
               </div>
-              <div className="hero-stat">
-                <div className="hero-stat-value">99.9%</div>
-                <div className="hero-stat-label">Uptime Achieved</div>
+              <span className="clock-separator">:</span>
+              <div className="clock-digit-group">
+                <span className="clock-digit" key={'m'+m}>{m}</span>
               </div>
-              <div className="hero-stat">
-                <div className="hero-stat-value">40%</div>
-                <div className="hero-stat-label">Faster Deploys</div>
-              </div>
+              <span className="clock-separator">:</span>
+              <span className="clock-seconds" key={'s'+s}>{s}</span>
             </div>
 
-            <div className="hero-techs">
-              {techs.map(t => <span className="hero-tech" key={t}>{t}</span>)}
-            </div>
-
-            <div className="hero-actions">
-              <Link className="btn-primary" to="/projects">
-                View Projects <span aria-hidden="true">&rarr;</span>
-              </Link>
-              <Link className="btn-outline" to="/contact">
-                Get in Touch
-              </Link>
+            <div className="tz-bar">
+              {SKILLS.map((sk, i) => (
+                <div
+                  className={'tz-item' + (i === activeSkill ? ' active' : '')}
+                  key={sk.name}
+                  onClick={() => this.setState({activeSkill: i})}
+                >
+                  <span className="tz-name">{sk.name}</span>
+                  <span className="tz-time">{sk.time}</span>
+                </div>
+              ))}
             </div>
           </div>
-        </section>
+
+          <div className="hero-bottom">
+            <div className="hero-bottom-left">
+              <div className="hero-location">
+                DevOps Engineer,<br/>
+                <Link to="/projects" style={{opacity:0.7}}>View Projects →</Link>
+              </div>
+            </div>
+            <div className="hero-bottom-right">
+              <div className="hero-day">{dayName},</div>
+              <div className="hero-date">{monthName} {date}</div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
