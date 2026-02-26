@@ -1,0 +1,50 @@
+# SAM CLI configuration file
+# More information: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-config.html
+
+version = 0.1
+
+[default.global.parameters]
+stack_name = "serverless-event-pipeline"
+
+[default.build.parameters]
+cached = true
+parallel = true
+use_container = false
+
+[default.validate.parameters]
+lint = true
+
+[default.deploy.parameters]
+capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND"
+confirm_changeset = true
+resolve_s3 = true
+region = "us-east-1"
+parameter_overrides = "Environment=\"dev\""
+fail_on_empty_changeset = false
+tags = "Project=serverless-event-pipeline ManagedBy=sam-cli"
+
+[default.sync.parameters]
+watch = true
+
+[default.local_invoke.parameters]
+env_vars = "env.json"
+
+[staging.deploy.parameters]
+stack_name = "serverless-event-pipeline-staging"
+capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND"
+confirm_changeset = true
+resolve_s3 = true
+region = "us-east-1"
+parameter_overrides = "Environment=\"staging\""
+fail_on_empty_changeset = false
+tags = "Project=serverless-event-pipeline Environment=staging ManagedBy=sam-cli"
+
+[prod.deploy.parameters]
+stack_name = "serverless-event-pipeline-prod"
+capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND"
+confirm_changeset = true
+resolve_s3 = true
+region = "us-east-1"
+parameter_overrides = "Environment=\"prod\" RetentionDays=\"30\""
+fail_on_empty_changeset = false
+tags = "Project=serverless-event-pipeline Environment=prod ManagedBy=sam-cli"

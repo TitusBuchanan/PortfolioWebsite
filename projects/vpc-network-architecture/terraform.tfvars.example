@@ -1,0 +1,28 @@
+# Project identification
+project_name = "my-app"
+environment  = "prod"
+aws_region   = "us-east-1"
+
+# VPC CIDR
+vpc_cidr = "10.0.0.0/16"
+
+# Subnet CIDRs (3 public + 3 private, one per AZ)
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+private_subnet_cidrs = ["10.0.11.0/24", "10.0.12.0/24", "10.0.13.0/24"]
+
+# NAT Gateway settings
+enable_nat_gateway = true
+single_nat_gateway = false  # Set true for non-prod to save costs
+
+# VPC Flow Logs
+flow_log_retention_days = 30
+
+# SSH access (restrict to your bastion / VPN CIDR)
+allowed_ssh_cidrs = ["10.0.0.0/16"]
+
+# Tags applied to every resource
+common_tags = {
+  Project    = "my-app"
+  Owner      = "platform-team"
+  CostCenter = "engineering"
+}
