@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 
 const projects = [
+  {cat:'web',title:'MyResu-Me',desc:'Full-stack resume builder platform — fully responsible for development. Enables users to create professional resumes with modern templates.',tags:['Full Stack','Web App','Development'],link:'https://www.myresu-me.com'},
   {cat:'cloud',title:'AWS Multi-Region Infra',desc:'Terraform-based multi-region AWS infrastructure with EC2, S3, RDS. Reduced provisioning by 40%.',tags:['Terraform','AWS','EC2'],link:'https://github.com/TitusBuchanan'},
   {cat:'cloud',title:'Serverless Event Pipeline',desc:'Lambda serverless architecture for event processing, reducing infrastructure costs by 25%.',tags:['Lambda','CloudFormation','S3'],link:'https://github.com/TitusBuchanan'},
   {cat:'cloud',title:'VPC Network Architecture',desc:'Secure VPC with public/private subnets, NAT gateways, security groups, and IAM policies.',tags:['AWS','VPC','IAM'],link:'https://github.com/TitusBuchanan'},
@@ -13,7 +14,7 @@ const projects = [
   {cat:'k8s',title:'IoT Firmware Deploy',desc:'Docker + Azure IoT firmware update system, reducing deployment windows by 35%.',tags:['Docker','Azure','Ubuntu'],link:'https://github.com/TitusBuchanan'},
 ];
 
-const filters = [{key:'all',label:'All'},{key:'cloud',label:'Cloud'},{key:'cicd',label:'CI/CD'},{key:'k8s',label:'Kubernetes'},{key:'auto',label:'Automation'}];
+const filters = [{key:'all',label:'All'},{key:'web',label:'Web Apps'},{key:'cloud',label:'Cloud'},{key:'cicd',label:'CI/CD'},{key:'k8s',label:'Kubernetes'},{key:'auto',label:'Automation'}];
 
 class Projects extends Component {
   constructor(props) { super(props); this.state = {active:'all'}; }
