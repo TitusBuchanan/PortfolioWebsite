@@ -1,0 +1,53 @@
+---
+- name: Apply common configuration to all nodes
+  hosts: all
+  become: true
+  gather_facts: true
+  tags:
+    - common
+  pre_tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+    - name: Ensure base packages are installed
+      ansible.builtin.package:
+        name:
+          - curl
+          - wget
+          - vim
+          - htop
+          - unzip
+          - jq
+          - ca-certificates
+          - gnupg
+          - lsb-release
+        state: present
+
+    - name: Set timezone
+      community.general.timezone:
+        name: UTC
+
+    - name: Configure NTP
+      ansible.builtin.package:
+        name: chrony
+        state: present
+      notify: restart chrony
+
+  handlers:
+    - name: restart chrony
+      ansible.builtin.service:
+        name: chrony
+        state: restarted
+        enabled: true
+
+- name: Configure webservers
+  import_playbook: webserver.yml
+
+- name: Configure Docker hosts
+  import_playbook: docker.yml
+
+- name: Configure monitoring agents
+  import_playbook: monitoring.yml

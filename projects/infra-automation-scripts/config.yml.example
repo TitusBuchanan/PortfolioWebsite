@@ -1,0 +1,90 @@
+# Infrastructure Automation Scripts Configuration
+# Copy this file to config.yml and customize for your environment.
+
+aws:
+  region: us-east-1
+  profile: default
+
+# AWS Resource Audit settings
+audit:
+  sections:
+    - ec2
+    - rds
+    - s3
+    - ebs
+    - eip
+  csv_output: reports/audit_report.csv
+
+# EBS Backup Manager settings
+backup:
+  volumes:
+    # Specify volume IDs directly
+    # - vol-0abc123def456
+    # - vol-0def456abc789
+  tag_filters:
+    Backup: "true"
+    Environment: production
+  retention_days: 30
+  description_prefix: "Automated daily backup"
+  dr_copy:
+    enabled: true
+    dest_region: us-west-2
+  extra_tags:
+    Team: platform
+    CostCenter: infrastructure
+
+# Log Rotation settings
+log_rotation:
+  directories:
+    - path: /var/log/nginx
+      pattern: "*.log"
+      retention_days: 30
+    - path: /var/log/application
+      pattern: "*.log"
+      retention_days: 14
+    - path: /var/log/syslog
+      pattern: "syslog*"
+      retention_days: 7
+  compression: gzip
+  s3_archive:
+    enabled: true
+    bucket: my-company-log-archive
+    prefix: logs/archive
+
+# Health Checker settings
+health_check:
+  endpoints:
+    - https://api.example.com/health
+    - https://www.example.com
+    - https://admin.example.com/status
+  thresholds:
+    disk_percent: 85
+    memory_percent: 90
+    cpu_percent: 80
+  http_timeout: 10
+  alerting:
+    sns_topic_arn: arn:aws:sns:us-east-1:123456789012:ops-alerts
+    sns_region: us-east-1
+
+# Cost Optimizer settings
+cost_optimizer:
+  cpu_threshold: 10.0
+  snapshot_age_days: 90
+  stopped_instance_days: 7
+  output_format: table
+  output_file: reports/cost_report.json
+
+# SSL Certificate Monitor settings
+ssl_monitor:
+  domains:
+    - example.com
+    - api.example.com
+    - admin.example.com
+    - cdn.example.com
+  warn_days: 30
+  critical_days: 7
+  port: 443
+  timeout: 10
+  alerting:
+    sns_topic_arn: arn:aws:sns:us-east-1:123456789012:cert-alerts
+    sns_region: us-east-1

@@ -1,0 +1,160 @@
+---
+- name: Remove old Docker packages
+  ansible.builtin.apt:
+    name:
+      - docker
+      - docker-engine
+      - docker.io
+      - containerd
+      - runc
+    state: absent
+
+- name: Install Docker prerequisites
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - python3-pip
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Create Docker GPG key directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: Add Docker GPG key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: "0644"
+    force: false
+
+- name: Add Docker repository
+  ansible.builtin.apt_repository:
+    repo: >-
+      deb [arch={{ ansible_architecture | replace('x86_64', 'amd64') }}
+      signed-by=/etc/apt/keyrings/docker.asc]
+      https://download.docker.com/linux/{{ ansible_distribution | lower }}
+      {{ ansible_distribution_release }} stable
+    state: present
+    filename: docker
+
+- name: Install Docker CE packages
+  ansible.builtin.apt:
+    name:
+      - "docker-{{ docker_edition | default('ce') }}"
+      - "docker-{{ docker_edition | default('ce') }}-cli"
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+    update_cache: true
+
+- name: Ensure Docker config directory exists
+  ansible.builtin.file:
+    path: /etc/docker
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Configure Docker daemon
+  ansible.builtin.copy:
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      {
+        "log-driver": "{{ docker_log_driver | default('json-file') }}",
+        "log-opts": {
+          "max-size": "{{ docker_log_max_size | default('50m') }}",
+          "max-file": "{{ docker_log_max_file | default('5') }}"
+        },
+        "storage-driver": "{{ docker_storage_driver | default('overlay2') }}",
+        "live-restore": {{ docker_live_restore | default(true) | lower }},
+        "default-ulimits": {
+          "nofile": {
+            "Name": "nofile",
+            "Hard": 65536,
+            "Soft": 65536
+          }
+        },
+        "metrics-addr": "127.0.0.1:9323",
+        "experimental": false
+      }
+  notify: restart docker
+
+- name: Create docker group
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: Add users to docker group
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: docker
+    append: true
+  loop: "{{ docker_users | default([]) }}"
+
+- name: Ensure Docker data directory exists
+  ansible.builtin.file:
+    path: /var/lib/docker
+    state: directory
+    owner: root
+    group: root
+    mode: "0710"
+
+- name: Enable and start Docker service
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Enable and start containerd service
+  ansible.builtin.service:
+    name: containerd
+    state: started
+    enabled: true
+
+- name: Install Docker Compose standalone (legacy compatibility)
+  ansible.builtin.get_url:
+    url: "https://github.com/docker/compose/releases/download/v{{ docker_compose_version }}/docker-compose-linux-{{ ansible_architecture }}"
+    dest: /usr/local/bin/docker-compose
+    mode: "0755"
+    owner: root
+    group: root
+  when: docker_compose_version is defined
+
+- name: Configure Docker log rotation via logrotate
+  ansible.builtin.copy:
+    dest: /etc/logrotate.d/docker-containers
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      /var/lib/docker/containers/*/*.log {
+          rotate 7
+          daily
+          compress
+          missingok
+          delaycompress
+          copytruncate
+          notifempty
+      }
+
+- name: Set up Docker system prune cron job
+  ansible.builtin.cron:
+    name: "Docker system prune"
+    minute: "0"
+    hour: "2"
+    weekday: "0"
+    job: "docker system prune -af --volumes --filter 'until=168h' 2>&1 | logger -t docker-prune"
+    user: root
+

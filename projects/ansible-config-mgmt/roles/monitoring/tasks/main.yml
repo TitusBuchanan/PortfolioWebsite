@@ -1,0 +1,214 @@
+---
+# --- Node Exporter ---
+
+- name: Create node_exporter system user
+  ansible.builtin.user:
+    name: node_exporter
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+
+- name: Check if node_exporter is already installed
+  ansible.builtin.stat:
+    path: /usr/local/bin/node_exporter
+  register: node_exporter_binary
+
+- name: Download node_exporter
+  ansible.builtin.get_url:
+    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    dest: "/tmp/node_exporter-{{ node_exporter_version }}.tar.gz"
+    mode: "0644"
+  when: not node_exporter_binary.stat.exists
+
+- name: Extract node_exporter
+  ansible.builtin.unarchive:
+    src: "/tmp/node_exporter-{{ node_exporter_version }}.tar.gz"
+    dest: /tmp
+    remote_src: true
+  when: not node_exporter_binary.stat.exists
+
+- name: Install node_exporter binary
+  ansible.builtin.copy:
+    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
+    dest: /usr/local/bin/node_exporter
+    remote_src: true
+    owner: node_exporter
+    group: node_exporter
+    mode: "0755"
+  when: not node_exporter_binary.stat.exists
+  notify: restart node_exporter
+
+- name: Create node_exporter systemd service
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/node_exporter.service
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=Prometheus Node Exporter
+      Documentation=https://prometheus.io/docs/guides/node-exporter/
+      After=network-online.target
+      Wants=network-online.target
+
+      [Service]
+      Type=simple
+      User=node_exporter
+      Group=node_exporter
+      ExecStart=/usr/local/bin/node_exporter \
+        --web.listen-address={{ node_exporter_listen_address | default('0.0.0.0:9100') }} \
+        {% for collector in node_exporter_enabled_collectors | default([]) %}
+        --collector.{{ collector }} \
+        {% endfor %}
+        --collector.textfile.directory=/var/lib/node_exporter/textfile_collector
+      SyslogIdentifier=node_exporter
+      Restart=always
+      RestartSec=5
+      LimitNOFILE=65536
+
+      [Install]
+      WantedBy=multi-user.target
+  notify:
+    - reload systemd
+    - restart node_exporter
+
+- name: Create textfile collector directory
+  ansible.builtin.file:
+    path: /var/lib/node_exporter/textfile_collector
+    state: directory
+    owner: node_exporter
+    group: node_exporter
+    mode: "0755"
+
+- name: Enable and start node_exporter
+  ansible.builtin.service:
+    name: node_exporter
+    state: started
+    enabled: true
+
+# --- Promtail ---
+
+- name: Create promtail system user
+  ansible.builtin.user:
+    name: promtail
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+    groups: adm
+    append: true
+
+- name: Create promtail directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: promtail
+    group: promtail
+    mode: "0755"
+  loop:
+    - /etc/promtail
+    - /var/lib/promtail
+
+- name: Check if promtail is already installed
+  ansible.builtin.stat:
+    path: /usr/local/bin/promtail
+  register: promtail_binary
+
+- name: Download promtail
+  ansible.builtin.get_url:
+    url: "https://github.com/grafana/loki/releases/download/v{{ promtail_version }}/promtail-linux-amd64.zip"
+    dest: "/tmp/promtail-{{ promtail_version }}.zip"
+    mode: "0644"
+  when: not promtail_binary.stat.exists
+
+- name: Install unzip for promtail extraction
+  ansible.builtin.apt:
+    name: unzip
+    state: present
+
+- name: Extract promtail
+  ansible.builtin.unarchive:
+    src: "/tmp/promtail-{{ promtail_version }}.zip"
+    dest: /usr/local/bin
+    remote_src: true
+    mode: "0755"
+  when: not promtail_binary.stat.exists
+  notify: restart promtail
+
+- name: Rename promtail binary
+  ansible.builtin.command:
+    cmd: mv /usr/local/bin/promtail-linux-amd64 /usr/local/bin/promtail
+    creates: /usr/local/bin/promtail
+  when: not promtail_binary.stat.exists
+
+- name: Deploy promtail configuration
+  ansible.builtin.copy:
+    dest: /etc/promtail/config.yml
+    owner: promtail
+    group: promtail
+    mode: "0644"
+    content: |
+      server:
+        http_listen_port: {{ promtail_port | default(9080) }}
+        grpc_listen_port: 0
+
+      positions:
+        filename: {{ promtail_positions_file | default('/var/lib/promtail/positions.yaml') }}
+
+      clients:
+        - url: {{ loki_url | default('http://localhost:3100/loki/api/v1/push') }}
+          tenant_id: {{ inventory_hostname }}
+
+      scrape_configs:
+      {% for config in promtail_scrape_configs | default([]) %}
+        - job_name: {{ config.job_name }}
+          static_configs:
+          {% for sc in config.static_configs %}
+            - targets:
+              {% for target in sc.targets %}
+                - {{ target }}
+              {% endfor %}
+              labels:
+              {% for key, value in sc.labels.items() %}
+                {{ key }}: {{ value }}
+              {% endfor %}
+          {% endfor %}
+      {% endfor %}
+  notify: restart promtail
+
+- name: Create promtail systemd service
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/promtail.service
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=Promtail Log Agent
+      Documentation=https://grafana.com/docs/loki/latest/clients/promtail/
+      After=network-online.target
+      Wants=network-online.target
+
+      [Service]
+      Type=simple
+      User=promtail
+      Group=promtail
+      ExecStart=/usr/local/bin/promtail -config.file=/etc/promtail/config.yml
+      SyslogIdentifier=promtail
+      Restart=always
+      RestartSec=5
+      LimitNOFILE=65536
+
+      [Install]
+      WantedBy=multi-user.target
+  notify:
+    - reload systemd
+    - restart promtail
+
+- name: Enable and start promtail
+  ansible.builtin.service:
+    name: promtail
+    state: started
+    enabled: true
+
+# --- Handlers ---
+
