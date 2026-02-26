@@ -1,0 +1,244 @@
+pipeline {
+    agent {
+        docker {
+            image 'node:20-alpine'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
+
+    environment {
+        APP_NAME        = 'jenkins-cicd-app'
+        AWS_REGION      = 'us-east-1'
+        ECR_REGISTRY    = credentials('ecr-registry-url')
+        ECR_REPO        = "${ECR_REGISTRY}/${APP_NAME}"
+        ECS_CLUSTER     = 'production-cluster'
+        ECS_SERVICE_STG = "${APP_NAME}-staging"
+        ECS_SERVICE_PRD = "${APP_NAME}-production"
+        DOCKER_TAG      = "${env.GIT_COMMIT?.take(8) ?: 'latest'}"
+        SLACK_CHANNEL   = '#deployments'
+    }
+
+    options {
+        timeout(time: 60, unit: 'MINUTES')
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+        timestamps()
+        ansiColor('xterm')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+                script {
+                    env.GIT_AUTHOR = sh(script: 'git log -1 --format="%an"', returnStdout: true).trim()
+                    env.GIT_MESSAGE = sh(script: 'git log -1 --format="%s"', returnStdout: true).trim()
+                }
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm ci --prefer-offline'
+            }
+        }
+
+        stage('Lint') {
+            steps {
+                sh 'npm run lint'
+            }
+            post {
+                failure {
+                    archiveArtifacts artifacts: 'lint-results.xml', allowEmptyArchive: true
+                }
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                sh 'npm run test:unit -- --coverage --reporters=default --reporters=jest-junit'
+            }
+            post {
+                always {
+                    junit 'junit.xml'
+                    publishHTML(target: [
+                        reportDir: 'coverage/lcov-report',
+                        reportFiles: 'index.html',
+                        reportName: 'Coverage Report'
+                    ])
+                }
+            }
+        }
+
+        stage('Integration Tests') {
+            steps {
+                script {
+                    docker.image('postgres:16-alpine').withRun('-e POSTGRES_PASSWORD=testpass -e POSTGRES_DB=testdb') { db ->
+                        docker.image('redis:7-alpine').withRun('') { cache ->
+                            sh """
+                                export DATABASE_URL="postgresql://postgres:testpass@${db.id}:5432/testdb"
+                                export REDIS_URL="redis://${cache.id}:6379"
+                                npm run test:integration
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    dockerImage = docker.build("${ECR_REPO}:${DOCKER_TAG}", '--target production .')
+                }
+            }
+        }
+
+        stage('Push to ECR') {
+            when {
+                anyOf {
+                    branch 'main'
+                    branch 'develop'
+                }
+            }
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
+                                  credentialsId: 'aws-credentials',
+                                  accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                                  secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                    sh """
+                        aws ecr get-login-password --region ${AWS_REGION} | \
+                            docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                        docker push ${ECR_REPO}:${DOCKER_TAG}
+                        docker tag ${ECR_REPO}:${DOCKER_TAG} ${ECR_REPO}:latest
+                        docker push ${ECR_REPO}:latest
+                    """
+                }
+            }
+        }
+
+        stage('Deploy to Staging') {
+            when {
+                anyOf {
+                    branch 'main'
+                    branch 'develop'
+                }
+            }
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
+                                  credentialsId: 'aws-credentials',
+                                  accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                                  secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                    sh """
+                        ./scripts/deploy.sh \
+                            --cluster ${ECS_CLUSTER} \
+                            --service ${ECS_SERVICE_STG} \
+                            --image ${ECR_REPO}:${DOCKER_TAG} \
+                            --region ${AWS_REGION}
+                    """
+                }
+            }
+            post {
+                success {
+                    slackSend(
+                        channel: env.SLACK_CHANNEL,
+                        color: 'good',
+                        message: "Staging deploy succeeded: ${APP_NAME}:${DOCKER_TAG} by ${env.GIT_AUTHOR}"
+                    )
+                }
+            }
+        }
+
+        stage('Staging Smoke Test') {
+            when {
+                anyOf {
+                    branch 'main'
+                    branch 'develop'
+                }
+            }
+            steps {
+                retry(3) {
+                    sh '''
+                        sleep 10
+                        STAGING_URL=$(aws ecs describe-services \
+                            --cluster ${ECS_CLUSTER} \
+                            --services ${ECS_SERVICE_STG} \
+                            --query 'services[0].loadBalancers[0].targetGroupArn' \
+                            --output text)
+                        curl -sf --retry 5 --retry-delay 5 "https://staging.example.com/health" || exit 1
+                    '''
+                }
+            }
+        }
+
+        stage('Approval Gate') {
+            when {
+                branch 'main'
+            }
+            steps {
+                slackSend(
+                    channel: env.SLACK_CHANNEL,
+                    color: 'warning',
+                    message: "Production deploy pending approval: ${APP_NAME}:${DOCKER_TAG}\nApprove: ${env.BUILD_URL}input"
+                )
+                timeout(time: 30, unit: 'MINUTES') {
+                    input(
+                        message: "Deploy ${APP_NAME}:${DOCKER_TAG} to production?",
+                        submitter: 'admin,release-managers',
+                        parameters: [
+                            booleanParam(name: 'CONFIRM', defaultValue: false, description: 'Check to confirm production deployment')
+                        ]
+                    )
+                }
+            }
+        }
+
+        stage('Deploy to Production') {
+            when {
+                branch 'main'
+            }
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
+                                  credentialsId: 'aws-credentials',
+                                  accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                                  secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+                    sh """
+                        ./scripts/deploy.sh \
+                            --cluster ${ECS_CLUSTER} \
+                            --service ${ECS_SERVICE_PRD} \
+                            --image ${ECR_REPO}:${DOCKER_TAG} \
+                            --region ${AWS_REGION}
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            slackSend(
+                channel: env.SLACK_CHANNEL,
+                color: 'good',
+                message: "Pipeline succeeded: ${APP_NAME} #${env.BUILD_NUMBER}\nCommit: ${env.GIT_MESSAGE}\nAuthor: ${env.GIT_AUTHOR}"
+            )
+        }
+        failure {
+            slackSend(
+                channel: env.SLACK_CHANNEL,
+                color: 'danger',
+                message: "Pipeline FAILED: ${APP_NAME} #${env.BUILD_NUMBER}\nCommit: ${env.GIT_MESSAGE}\nAuthor: ${env.GIT_AUTHOR}\nDetails: ${env.BUILD_URL}"
+            )
+        }
+        unstable {
+            slackSend(
+                channel: env.SLACK_CHANNEL,
+                color: 'warning',
+                message: "Pipeline unstable: ${APP_NAME} #${env.BUILD_NUMBER}"
+            )
+        }
+        cleanup {
+            cleanWs()
+            sh 'docker system prune -f || true'
+        }
+    }
+}

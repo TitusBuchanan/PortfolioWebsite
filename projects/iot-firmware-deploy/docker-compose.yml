@@ -1,0 +1,134 @@
+version: "3.9"
+
+services:
+  firmware-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: firmware-builder
+    image: iot-firmware-builder:latest
+    container_name: firmware-builder
+    volumes:
+      - ./src:/workspace:ro
+      - build-output:/output
+      - ./scripts:/opt/scripts:ro
+    environment:
+      - FIRMWARE_VERSION=${FIRMWARE_VERSION:-0.0.0-dev}
+      - BUILD_TARGET=${BUILD_TARGET:-all}
+      - BUILD_TYPE=${BUILD_TYPE:-release}
+      - SIGNING_KEY_PATH=/run/secrets/signing_key
+    secrets:
+      - signing_key
+    networks:
+      - build-network
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 4G
+        reservations:
+          cpus: "1"
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "test", "-d", "/workspace"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      com.iot.service: "firmware-builder"
+      com.iot.environment: "${ENVIRONMENT:-development}"
+
+  registry:
+    image: registry:2
+    container_name: firmware-registry
+    ports:
+      - "5000:5000"
+    volumes:
+      - registry-data:/var/lib/registry
+    environment:
+      REGISTRY_STORAGE_DELETE_ENABLED: "true"
+      REGISTRY_HTTP_HEADERS_X-Content-Type-Options: "[nosniff]"
+      REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin: "['*']"
+      REGISTRY_LOG_LEVEL: "info"
+    networks:
+      - build-network
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5000/v2/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    labels:
+      com.iot.service: "registry"
+      com.iot.environment: "${ENVIRONMENT:-development}"
+
+  deploy-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: firmware-builder
+    image: iot-firmware-builder:latest
+    container_name: deploy-agent
+    entrypoint: ["/opt/scripts/deploy-firmware.sh"]
+    command: ["--watch"]
+    volumes:
+      - build-output:/output:ro
+      - ./scripts:/opt/scripts:ro
+    environment:
+      - AZURE_STORAGE_ACCOUNT=${AZURE_STORAGE_ACCOUNT:-}
+      - AZURE_STORAGE_CONTAINER=${AZURE_STORAGE_CONTAINER:-firmware}
+      - AZURE_IOT_HUB_NAME=${AZURE_IOT_HUB_NAME:-}
+      - DEPLOY_STRATEGY=${DEPLOY_STRATEGY:-rolling}
+      - DEPLOY_BATCH_SIZE=${DEPLOY_BATCH_SIZE:-10}
+      - ROLLOUT_PERCENTAGE=${ROLLOUT_PERCENTAGE:-100}
+      - HEALTH_CHECK_INTERVAL=${HEALTH_CHECK_INTERVAL:-60}
+    env_file:
+      - .env
+    depends_on:
+      firmware-builder:
+        condition: service_completed_successfully
+      registry:
+        condition: service_healthy
+    networks:
+      - build-network
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    restart: on-failure:3
+    labels:
+      com.iot.service: "deploy-agent"
+      com.iot.environment: "${ENVIRONMENT:-development}"
+
+volumes:
+  build-output:
+    driver: local
+    labels:
+      com.iot.volume: "build-output"
+  registry-data:
+    driver: local
+    labels:
+      com.iot.volume: "registry-data"
+
+networks:
+  build-network:
+    driver: bridge
+    labels:
+      com.iot.network: "build"
+
+secrets:
+  signing_key:
+    file: ${SIGNING_KEY_FILE:-./secrets/signing.key}

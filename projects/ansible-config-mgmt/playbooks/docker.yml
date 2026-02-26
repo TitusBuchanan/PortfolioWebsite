@@ -1,0 +1,44 @@
+---
+- name: Install and configure Docker
+  hosts: appservers
+  become: true
+  gather_facts: true
+  tags:
+    - docker
+
+  vars:
+    docker_edition: ce
+    docker_compose_version: "2.24.5"
+    docker_users:
+      - "{{ app_user | default('deploy') }}"
+    docker_log_driver: json-file
+    docker_log_max_size: "50m"
+    docker_log_max_file: "5"
+    docker_storage_driver: overlay2
+    docker_live_restore: true
+    docker_registry_mirrors: []
+
+  roles:
+    - role: docker
+      tags: docker
+
+  post_tasks:
+    - name: Verify Docker is running
+      ansible.builtin.service_facts:
+
+    - name: Assert Docker service is active
+      ansible.builtin.assert:
+        that:
+          - "'docker.service' in services"
+          - "services['docker.service'].state == 'running'"
+        fail_msg: "Docker is not running after deployment"
+        success_msg: "Docker is running successfully"
+
+    - name: Get Docker version
+      ansible.builtin.command: docker version --format '{{ "{{" }}.Server.Version{{ "}}" }}'
+      changed_when: false
+      register: docker_version
+
+    - name: Display Docker version
+      ansible.builtin.debug:
+        msg: "Docker version: {{ docker_version.stdout }}"

@@ -1,0 +1,47 @@
+---
+- name: Configure webservers with Nginx, SSL, and firewall
+  hosts: webservers
+  become: true
+  gather_facts: true
+  tags:
+    - webserver
+    - nginx
+
+  vars:
+    nginx_worker_connections: 1024
+    nginx_keepalive_timeout: 65
+    nginx_client_max_body_size: 64m
+    ssl_protocols: "TLSv1.2 TLSv1.3"
+    ssl_ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+    firewall_allowed_ports:
+      - "22/tcp"
+      - "80/tcp"
+      - "443/tcp"
+    server_names:
+      - example.com
+      - www.example.com
+
+  roles:
+    - role: webserver
+      tags: webserver
+
+  post_tasks:
+    - name: Verify Nginx is running
+      ansible.builtin.service_facts:
+
+    - name: Assert Nginx service is active
+      ansible.builtin.assert:
+        that:
+          - "'nginx.service' in services"
+          - "services['nginx.service'].state == 'running'"
+        fail_msg: "Nginx is not running after deployment"
+        success_msg: "Nginx is running successfully"
+
+    - name: Test Nginx configuration syntax
+      ansible.builtin.command: nginx -t
+      changed_when: false
+      register: nginx_test
+
+    - name: Display Nginx config test result
+      ansible.builtin.debug:
+        var: nginx_test.stderr_lines

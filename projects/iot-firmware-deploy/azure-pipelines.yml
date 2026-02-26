@@ -1,0 +1,280 @@
+trigger:
+  branches:
+    include:
+      - main
+      - release/*
+  paths:
+    include:
+      - src/**
+      - scripts/**
+      - Dockerfile
+    exclude:
+      - "*.md"
+      - docs/**
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - src/**
+
+variables:
+  - group: iot-firmware-variables
+  - name: dockerRegistry
+    value: "$(AZURE_CONTAINER_REGISTRY).azurecr.io"
+  - name: imageName
+    value: "iot-firmware-builder"
+  - name: vmImage
+    value: "ubuntu-latest"
+
+stages:
+  - stage: Build
+    displayName: "Build Firmware"
+    jobs:
+      - job: BuildFirmware
+        displayName: "Build and Test Firmware"
+        pool:
+          vmImage: $(vmImage)
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: Docker@2
+            displayName: "Build firmware builder image"
+            inputs:
+              command: build
+              Dockerfile: Dockerfile
+              repository: $(imageName)
+              tags: |
+                $(Build.BuildId)
+                latest
+
+          - script: |
+              VERSION=$(git describe --tags --always --dirty 2>/dev/null || echo "0.0.0-$(Build.BuildId)")
+              echo "##vso[task.setvariable variable=firmwareVersion;isOutput=true]${VERSION}"
+              echo "Firmware version: ${VERSION}"
+            displayName: "Determine firmware version"
+            name: version
+
+          - script: |
+              mkdir -p $(Build.ArtifactStagingDirectory)/firmware
+              docker run --rm \
+                -v $(Build.SourcesDirectory)/src:/workspace:ro \
+                -v $(Build.ArtifactStagingDirectory)/firmware:/output \
+                -e FIRMWARE_VERSION=$(version.firmwareVersion) \
+                -e BUILD_TYPE=release \
+                -e BUILD_TARGET=all \
+                $(imageName):$(Build.BuildId) \
+                --version $(version.firmwareVersion) --type release --target all
+            displayName: "Build firmware"
+
+          - script: |
+              cd $(Build.ArtifactStagingDirectory)/firmware
+              LATEST_BUILD=$(ls -d */ | sort -r | head -1)
+              if [ -f "${LATEST_BUILD}checksums.sha256" ]; then
+                cd "$LATEST_BUILD"
+                sha256sum -c checksums.sha256
+                echo "Checksum verification passed"
+              fi
+            displayName: "Verify build artifacts"
+
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish firmware artifacts"
+            inputs:
+              pathToPublish: "$(Build.ArtifactStagingDirectory)/firmware"
+              artifactName: "firmware"
+              publishLocation: "Container"
+
+  - stage: Test
+    displayName: "Test Firmware"
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - job: StaticAnalysis
+        displayName: "Static Analysis"
+        pool:
+          vmImage: $(vmImage)
+        steps:
+          - checkout: self
+
+          - script: |
+              docker run --rm \
+                -v $(Build.SourcesDirectory)/src:/workspace:ro \
+                $(imageName):latest \
+                bash -c "cppcheck --enable=all --error-exitcode=1 /workspace/src/ 2>&1" || true
+            displayName: "Run cppcheck"
+
+          - script: |
+              docker run --rm \
+                -v $(Build.SourcesDirectory)/src:/workspace:ro \
+                $(imageName):latest \
+                bash -c "find /workspace/src -name '*.c' -o -name '*.h' | xargs clang-format --dry-run --Werror 2>&1" || true
+            displayName: "Check code formatting"
+
+      - job: UnitTests
+        displayName: "Unit Tests"
+        pool:
+          vmImage: $(vmImage)
+        steps:
+          - checkout: self
+
+          - script: |
+              docker run --rm \
+                -v $(Build.SourcesDirectory)/src:/workspace:ro \
+                -v $(Build.ArtifactStagingDirectory)/test-results:/output \
+                -e BUILD_TARGET=tests \
+                -e BUILD_TYPE=debug \
+                $(imageName):latest \
+                --target tests --type debug || true
+            displayName: "Run unit tests"
+
+          - task: PublishTestResults@2
+            displayName: "Publish test results"
+            condition: always()
+            inputs:
+              testResultsFormat: "JUnit"
+              testResultsFiles: "$(Build.ArtifactStagingDirectory)/test-results/**/*.xml"
+              failTaskOnFailedTests: true
+
+  - stage: DeployStaging
+    displayName: "Deploy to Staging"
+    dependsOn: Test
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: DeployStaging
+        displayName: "Deploy to Staging Fleet"
+        environment: "iot-staging"
+        pool:
+          vmImage: $(vmImage)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: firmware
+
+                - task: AzureCLI@2
+                  displayName: "Upload firmware to Azure Blob"
+                  inputs:
+                    azureSubscription: "$(AZURE_SERVICE_CONNECTION)"
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      FIRMWARE_DIR=$(find $(Pipeline.Workspace)/firmware -maxdepth 1 -type d | sort -r | head -1)
+                      VERSION=$(jq -r '.version' "${FIRMWARE_DIR}/manifest.json")
+                      BUILD_ID=$(jq -r '.buildId' "${FIRMWARE_DIR}/manifest.json")
+
+                      az storage blob upload-batch \
+                        --account-name $(AZURE_STORAGE_ACCOUNT) \
+                        --destination $(AZURE_STORAGE_CONTAINER) \
+                        --destination-path "builds/${VERSION}/${BUILD_ID}" \
+                        --source "$FIRMWARE_DIR" \
+                        --overwrite
+
+                - task: AzureCLI@2
+                  displayName: "Create IoT Hub staging deployment"
+                  inputs:
+                    azureSubscription: "$(AZURE_SERVICE_CONNECTION)"
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      FIRMWARE_DIR=$(find $(Pipeline.Workspace)/firmware -maxdepth 1 -type d | sort -r | head -1)
+                      VERSION=$(jq -r '.version' "${FIRMWARE_DIR}/manifest.json")
+                      BUILD_ID=$(jq -r '.buildId' "${FIRMWARE_DIR}/manifest.json")
+                      DEPLOYMENT_ID="staging-${BUILD_ID}"
+                      FIRMWARE_URL="https://$(AZURE_STORAGE_ACCOUNT).blob.core.windows.net/$(AZURE_STORAGE_CONTAINER)/builds/${VERSION}/${BUILD_ID}/app-${VERSION}.bin"
+
+                      az iot hub configuration create \
+                        --hub-name $(AZURE_IOT_HUB_NAME_STAGING) \
+                        --config-id "$DEPLOYMENT_ID" \
+                        --content "{\"deviceContent\":{\"properties.desired.firmware\":{\"url\":\"${FIRMWARE_URL}\",\"deploymentId\":\"${DEPLOYMENT_ID}\"}}}" \
+                        --target-condition "tags.environment='staging'" \
+                        --priority 10
+
+                - task: AzureCLI@2
+                  displayName: "Health check - staging fleet"
+                  inputs:
+                    azureSubscription: "$(AZURE_SERVICE_CONNECTION)"
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      export AZURE_IOT_HUB_NAME=$(AZURE_IOT_HUB_NAME_STAGING)
+                      chmod +x $(Build.SourcesDirectory)/scripts/health-check.sh
+                      $(Build.SourcesDirectory)/scripts/health-check.sh \
+                        --deployment-id "staging-$(jq -r '.buildId' $(Pipeline.Workspace)/firmware/*/manifest.json)" \
+                        --threshold 90 \
+                        --interval 30 \
+                        --max-retries 10 \
+                        --watch
+
+  - stage: DeployProduction
+    displayName: "Deploy to Production"
+    dependsOn: DeployStaging
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+    jobs:
+      - deployment: DeployProduction
+        displayName: "Deploy to Production Fleet"
+        environment: "iot-production"
+        pool:
+          vmImage: $(vmImage)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: firmware
+
+                - task: AzureCLI@2
+                  displayName: "Deploy to production (canary 10%)"
+                  inputs:
+                    azureSubscription: "$(AZURE_SERVICE_CONNECTION)"
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      export AZURE_STORAGE_ACCOUNT=$(AZURE_STORAGE_ACCOUNT)
+                      export AZURE_STORAGE_CONTAINER=$(AZURE_STORAGE_CONTAINER)
+                      export AZURE_IOT_HUB_NAME=$(AZURE_IOT_HUB_NAME_PRODUCTION)
+                      export DEPLOY_STRATEGY=canary
+                      export ROLLOUT_PERCENTAGE=10
+                      export DEPLOY_BATCH_SIZE=5
+                      chmod +x $(Build.SourcesDirectory)/scripts/deploy-firmware.sh
+                      $(Build.SourcesDirectory)/scripts/deploy-firmware.sh \
+                        --version "$(jq -r '.version' $(Pipeline.Workspace)/firmware/*/manifest.json)" \
+                        --strategy canary \
+                        --rollout-percentage 10 \
+                        --device-group canary
+
+                - task: AzureCLI@2
+                  displayName: "Health check - canary fleet"
+                  inputs:
+                    azureSubscription: "$(AZURE_SERVICE_CONNECTION)"
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      export AZURE_IOT_HUB_NAME=$(AZURE_IOT_HUB_NAME_PRODUCTION)
+                      chmod +x $(Build.SourcesDirectory)/scripts/health-check.sh
+                      $(Build.SourcesDirectory)/scripts/health-check.sh \
+                        --device-group canary \
+                        --threshold 98 \
+                        --interval 60 \
+                        --max-retries 15 \
+                        --watch
+
+                - task: AzureCLI@2
+                  displayName: "Full production rollout"
+                  inputs:
+                    azureSubscription: "$(AZURE_SERVICE_CONNECTION)"
+                    scriptType: bash
+                    scriptLocation: inlineScript
+                    inlineScript: |
+                      export AZURE_STORAGE_ACCOUNT=$(AZURE_STORAGE_ACCOUNT)
+                      export AZURE_STORAGE_CONTAINER=$(AZURE_STORAGE_CONTAINER)
+                      export AZURE_IOT_HUB_NAME=$(AZURE_IOT_HUB_NAME_PRODUCTION)
+                      chmod +x $(Build.SourcesDirectory)/scripts/deploy-firmware.sh
+                      $(Build.SourcesDirectory)/scripts/deploy-firmware.sh \
+                        --version "$(jq -r '.version' $(Pipeline.Workspace)/firmware/*/manifest.json)" \
+                        --strategy rolling \
+                        --rollout-percentage 100 \
+                        --batch-size 20

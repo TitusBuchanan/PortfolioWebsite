@@ -1,60 +1,46 @@
-import React, {Component} from 'react'
-import {Grid, Cell, List, ListItem, ListItemContent} from 'react-mdl'
-import Logo from '../Assets/Landingpagepic.png'
-
+import React, {Component} from 'react';
+import Reveal from './Reveal';
 
 class Contact extends Component {
-    render(){
-        return(
-            <div className="contact-body">
-                <Grid className="contact-grid">
-                    <Cell col={6}>
-                        <h2>Titus Buchanan</h2>
-                        <img
-                         src={Logo}
-                         alt="avatar"
-                         style={{height:'250px'}}
-                        />
-                        <p style={{width:'75%',margin:'auto', paddingTop:'1em'}}></p>
-                        
-                        
-                         
+  render() {
+    return (
+      <div className="page">
+        <div className="contact-page">
+          <div className="contact-bg-text">CONTACT</div>
+          <div className="contact-content">
+            <div className="contact-left">
+              <div className="contact-headline text-reveal">LET'S<br/><span className="grad-text">CONNECT</span></div>
+              <p className="contact-desc text-reveal text-reveal-d">
+                Open to discussing DevOps challenges, cloud architecture
+                opportunities, or ways to improve infrastructure at scale.
+              </p>
 
-                    </Cell>
-                    
-                    <Cell col={6}>
-                    <h2>Contact Me</h2>
-                    <hr></hr>
-                    <div className="contact-list">
-                        <List>
-                            <ListItem>
-                                <ListItemContent  style={{fontSize:'30px',fontFamily:'Assistant'}} >
-                                <i className= "fa fa-phone-square" aria-hidden='true' />
-                                (908) 418-3062
-                                
-                                </ListItemContent>
-                            </ListItem>
-                            <ListItem>
-                                <ListItemContent  style={{fontSize:'30px',fontFamily:'Assistant'}} >
-                                <i className= "fa fa-envelope" aria-hidden='true' />
-                                titusbuchananjr@gmail.com
-                                </ListItemContent>
-                            </ListItem>
-                            <ListItem>
-                                <ListItemContent  style={{fontSize:'30px',fontFamily:'Assistant'}} >
-                                <i className="fa fa-linkedin-square" aria-hidden="true" />
-                                linkedin.com/in/titusbuchanan/
-                                </ListItemContent>
-                            </ListItem>
-                            
-                        </List>
-                    </div>
-                    </Cell>
-                </Grid>
+              <Reveal><div className="contact-row">
+                <div className="contact-row-icon"><i className="fa fa-envelope" /></div>
+                <div><div className="contact-row-label meta">Email</div><div className="contact-row-value">titusbuchananjr@gmail.com</div></div>
+              </div></Reveal>
+              <Reveal delay={1}><div className="contact-row">
+                <div className="contact-row-icon"><i className="fa fa-phone" /></div>
+                <div><div className="contact-row-label meta">Phone</div><div className="contact-row-value">(908) 418-3062</div></div>
+              </div></Reveal>
+              <Reveal delay={2}><div className="contact-row">
+                <div className="contact-row-icon"><i className="fa fa-map-marker" /></div>
+                <div><div className="contact-row-label meta">Location</div><div className="contact-row-value">Providence, RI</div></div>
+              </div></Reveal>
             </div>
-        )
-    }
-};
-
+            <div className="contact-right">
+              <Reveal><div className="contact-right-title">DEVOPS<br/>ENGINEER<br/>PROVIDENCE,<br/><span className="grad-text">RI</span></div></Reveal>
+              <Reveal delay={1}><div className="contact-socials">
+                <a className="contact-social" href="https://www.linkedin.com/in/titusbuchanan/" target="_blank" rel="noopener noreferrer"><i className="fa fa-linkedin" /></a>
+                <a className="contact-social" href="https://github.com/TitusBuchanan" target="_blank" rel="noopener noreferrer"><i className="fa fa-github" /></a>
+                <a className="contact-social" href="mailto:titusbuchananjr@gmail.com"><i className="fa fa-envelope-o" /></a>
+              </div></Reveal>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
 
 export default Contact;

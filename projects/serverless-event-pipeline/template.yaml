@@ -1,0 +1,273 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Serverless event processing pipeline.
+  S3 uploads trigger a Lambda that transforms data and publishes to SNS.
+  SNS fans out to SQS, which feeds a processor Lambda that stores results in DynamoDB.
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 60
+    MemorySize: 256
+    Tracing: Active
+    Environment:
+      Variables:
+        LOG_LEVEL: INFO
+        POWERTOOLS_SERVICE_NAME: event-pipeline
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Deployment environment
+
+  RetentionDays:
+    Type: Number
+    Default: 14
+    Description: CloudWatch log retention in days
+
+Resources:
+  # --------------------------------------------------------------------------
+  # S3 Bucket - event source
+  # --------------------------------------------------------------------------
+  EventBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-events-${AWS::AccountId}"
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: ArchiveOldObjects
+            Status: Enabled
+            Transitions:
+              - StorageClass: GLACIER
+                TransitionInDays: 90
+
+  # --------------------------------------------------------------------------
+  # SNS Topic
+  # --------------------------------------------------------------------------
+  EventTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "${AWS::StackName}-events"
+      KmsMasterKeyId: alias/aws/sns
+
+  # --------------------------------------------------------------------------
+  # SQS Queue (with DLQ)
+  # --------------------------------------------------------------------------
+  ProcessingQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-processing"
+      VisibilityTimeout: 300
+      MessageRetentionPeriod: 1209600
+      KmsMasterKeyId: alias/aws/sqs
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeadLetterQueue.Arn
+        maxReceiveCount: 3
+
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-dlq"
+      MessageRetentionPeriod: 1209600
+      KmsMasterKeyId: alias/aws/sqs
+
+  # SNS -> SQS subscription
+  QueueSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref EventTopic
+      Protocol: sqs
+      Endpoint: !GetAtt ProcessingQueue.Arn
+      RawMessageDelivery: true
+
+  # Allow SNS to send messages to SQS
+  QueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref ProcessingQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sns.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt ProcessingQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Ref EventTopic
+
+  # --------------------------------------------------------------------------
+  # DynamoDB Table - results store
+  # --------------------------------------------------------------------------
+  ResultsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-results"
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+        - AttributeName: processed_at
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: gsi-processed-at
+          KeySchema:
+            - AttributeName: sk
+              KeyType: HASH
+            - AttributeName: processed_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  # --------------------------------------------------------------------------
+  # Lambda: S3 Event Handler
+  # --------------------------------------------------------------------------
+  HandlerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-handler"
+      Handler: handler.lambda_handler
+      CodeUri: src/
+      Description: Processes S3 put events, transforms data, and publishes to SNS
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref EventTopic
+          ENVIRONMENT: !Ref Environment
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt EventTopic.TopicName
+        - S3ReadPolicy:
+            BucketName: !Ref EventBucket
+      Events:
+        S3Event:
+          Type: S3
+          Properties:
+            Bucket: !Ref EventBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: incoming/
+                  - Name: suffix
+                    Value: .json
+
+  HandlerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${HandlerFunction}"
+      RetentionInDays: !Ref RetentionDays
+
+  # --------------------------------------------------------------------------
+  # Lambda: SQS Processor
+  # --------------------------------------------------------------------------
+  ProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-processor"
+      Handler: processor.lambda_handler
+      CodeUri: src/
+      Description: Consumes SQS messages and stores processed results in DynamoDB
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ResultsTable
+          ENVIRONMENT: !Ref Environment
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ResultsTable
+        - SQSPollerPolicy:
+            QueueName: !GetAtt ProcessingQueue.QueueName
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ProcessingQueue.Arn
+            BatchSize: 10
+            MaximumBatchingWindowInSeconds: 5
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
+
+  ProcessorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${ProcessorFunction}"
+      RetentionInDays: !Ref RetentionDays
+
+  # --------------------------------------------------------------------------
+  # CloudWatch Alarms
+  # --------------------------------------------------------------------------
+  DLQAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${AWS::StackName}-dlq-messages"
+      AlarmDescription: Messages landed in the dead-letter queue
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt DeadLetterQueue.QueueName
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+
+Outputs:
+  EventBucketName:
+    Description: Name of the S3 event bucket
+    Value: !Ref EventBucket
+
+  EventTopicArn:
+    Description: ARN of the SNS topic
+    Value: !Ref EventTopic
+
+  ProcessingQueueUrl:
+    Description: URL of the SQS processing queue
+    Value: !Ref ProcessingQueue
+
+  DeadLetterQueueUrl:
+    Description: URL of the dead-letter queue
+    Value: !Ref DeadLetterQueue
+
+  ResultsTableName:
+    Description: Name of the DynamoDB results table
+    Value: !Ref ResultsTable
+
+  HandlerFunctionArn:
+    Description: ARN of the handler Lambda function
+    Value: !GetAtt HandlerFunction.Arn
+
+  ProcessorFunctionArn:
+    Description: ARN of the processor Lambda function
+    Value: !GetAtt ProcessorFunction.Arn

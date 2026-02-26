@@ -1,215 +1,59 @@
-import React, {Component} from 'react'
-import {Tabs, Tab, Grid, Cell, Card, CardTitle, CardActions,Button,CardMenu,IconButton, CardText } from 'react-mdl';
+import React, {Component} from 'react';
+import Reveal from './Reveal';
+
+const GH = 'https://github.com/TitusBuchanan/PortfolioWebsite/tree/cursor/development-environment-setup-cade/projects';
+
+const projects = [
+  {cat:'web',title:'MyResu-Me',desc:'Full-stack resume builder platform — fully responsible for development. Modern templates and professional export.',tags:['Full Stack','Web App','Development'],link:'https://www.myresu-me.com'},
+  {cat:'cloud',title:'AWS Multi-Region Infra',desc:'Terraform-based multi-region AWS infrastructure with EC2, S3, RDS, and ELB. Modular design with prod/staging environments.',tags:['Terraform','AWS','EC2','RDS'],link:GH+'/aws-multi-region-infra'},
+  {cat:'cloud',title:'Serverless Event Pipeline',desc:'AWS SAM pipeline: S3 events → Lambda → SNS → SQS → DynamoDB. Full event-driven architecture.',tags:['Lambda','SAM','SNS','SQS'],link:GH+'/serverless-event-pipeline'},
+  {cat:'cloud',title:'VPC Network Architecture',desc:'Production VPC with 3-tier subnets, HA NAT gateways, NACLs, flow logs, and security groups.',tags:['Terraform','VPC','IAM'],link:GH+'/vpc-network-architecture'},
+  {cat:'cicd',title:'Jenkins CI/CD Pipeline',desc:'Declarative pipeline: lint → test → Docker build → ECR push → ECS deploy with rollback and approval gates.',tags:['Jenkins','Docker','ECS'],link:GH+'/jenkins-cicd-pipeline'},
+  {cat:'cicd',title:'GitLab CI Multi-Stage',desc:'7-stage pipeline with SAST/DAST security scanning, Trivy container scan, and blue-green deployment.',tags:['GitLab CI','Trivy','Blue-Green'],link:GH+'/gitlab-ci-multistage'},
+  {cat:'k8s',title:'EKS Microservices',desc:'EKS cluster with Terraform, Helm charts, HPA, network policies, and mixed node groups.',tags:['EKS','Helm','Terraform'],link:GH+'/eks-microservices'},
+  {cat:'k8s',title:'Cluster Monitoring Stack',desc:'Prometheus + Grafana + Alertmanager with 18 alert rules, dashboards, and K8s service discovery.',tags:['Prometheus','Grafana','K8s'],link:GH+'/cluster-monitoring'},
+  {cat:'auto',title:'Ansible Config Mgmt',desc:'Ansible roles for nginx, Docker CE, and monitoring agents with inventory management.',tags:['Ansible','Nginx','Docker'],link:GH+'/ansible-config-mgmt'},
+  {cat:'auto',title:'Infra Automation Scripts',desc:'Python + Bash toolkit: AWS audit, EBS backup, cost optimizer, SSL cert monitor, health checker.',tags:['Python','Bash','Boto3'],link:GH+'/infra-automation-scripts'},
+  {cat:'k8s',title:'IoT Firmware Deploy',desc:'Docker-based firmware build pipeline with Azure Blob storage, IoT Hub integration, and canary rollout.',tags:['Docker','Azure','IoT Hub'],link:GH+'/iot-firmware-deploy'},
+];
+
+const filters = [{key:'all',label:'All'},{key:'web',label:'Web Apps'},{key:'cloud',label:'Cloud'},{key:'cicd',label:'CI/CD'},{key:'k8s',label:'Kubernetes'},{key:'auto',label:'Automation'}];
 
 class Projects extends Component {
-    constructor(props) {
-        super(props);
-        this.state = { activeTab:0 };
-    }
-    
-    
-   toggleCategories() {
-    if(this.state.activeTab === 0){
-        return (
-            
-            <div className="projects-grid">
-                <Card shadow={5} style={{ minWidth:'450', margin:'auto' }}>
-                    <CardTitle style={{color: '#fff', height:'176px', background: 'url(https://reactjs.org/logo-og.png) center/cover'}}></CardTitle>
-                        <CardText >
-                            My First React Project
-                        </CardText>
-                        <CardActions border>
-                            <Button colored href="https://github.com/TitusBuchanan/ReactProjects">Github</Button>
-                        </CardActions>
-                        <CardMenu style={{color: '#fff'}}>
-                            <IconButton name='share' />
-                        </CardMenu>
-                </Card>
-                <Card shadow={5} style={{ minWidth:'450', margin:'auto' }}>
-                    <CardTitle style={{color: '#fff', height:'176px', background: 'url(https://reactjs.org/logo-og.png) center/cover'}}></CardTitle>
-                        <CardText >
-                            REACT project making a To-Do Lst.
-                        </CardText>
-                        <CardActions border>
-                            <Button colored href="https://github.com/TitusBuchanan/ToDoReact">Github</Button>
-                        </CardActions>
-                        <CardMenu style={{color: '#fff'}}>
-                            <IconButton name='share' />
-                        </CardMenu>
-                </Card>
-                <Card shadow={5} style={{ minWidth:'450', margin:'auto' }}>
-                    <CardTitle style={{color: '#fff', height:'176px', background: 'url(https://reactjs.org/logo-og.png) center/cover'}}></CardTitle>
-                        <CardText >
-                            Code for this website which was made with only REACT!
-                        </CardText>
-                        <CardActions border>
-                            <Button colored href="https://github.com/TitusBuchanan/PortfolioWebsite">Github</Button>
-                        </CardActions>
-                        <CardMenu style={{color: '#fff'}}>
-                            <IconButton name='share' />
-                        </CardMenu>
-                </Card>
-           </div>
-    
-        )
-            
-                
+  constructor(props) { super(props); this.state = {active:'all'}; }
 
+  render() {
+    const filtered = this.state.active === 'all' ? projects : projects.filter(p => p.cat === this.state.active);
+    return (
+      <div className="page">
+        <div className="projects-page">
+          <div className="resume-label meta">Projects</div>
+          <div className="proj-title text-reveal">WO<span className="grad-text">RK</span></div>
 
-            
-        
-           
-           
+          <div className="proj-filters">
+            {filters.map(f => (
+              <button key={f.key} className={'proj-filter-btn'+(this.state.active===f.key?' active':'')}
+                onClick={() => this.setState({active:f.key})}>{f.label}</button>
+            ))}
+          </div>
 
-           
-    } else if(this.state.activeTab === 1) {
-        return (
-            <div className="projects-grid">
-                <Card shadow={5} style={{ minWidth:'450', margin:'auto' }}>
-                    <CardTitle style={{color: '#fff', height:'176px', background: 'url(https://miro.medium.com/max/1440/1*ahpxPO0jLGb9EWrY2qQPhg.jpeg) center/cover'}}></CardTitle>
-                        <CardText >
-                           Miscellaneous JavaScript Algorithims 
-                        </CardText>
-                        <CardActions border>
-                            <Button colored href="https://github.com/TitusBuchanan/fcc">Github</Button>
-                        </CardActions>
-                        <CardMenu style={{color: '#fff'}}>
-                            <IconButton name='share' />
-                        </CardMenu>
-                </Card>
-                <Card shadow={5} style={{ minWidth:'450', margin:'auto' }}>
-                    <CardTitle style={{color: '#fff', height:'176px', background: 'url(https://miro.medium.com/max/1440/1*ahpxPO0jLGb9EWrY2qQPhg.jpeg) center/cover'}}></CardTitle>
-                        <CardText >
-                        Javascript project using passport, passport local, bcrypt and other dependencies displaying my knowledge of these dependencies and how to incoperate them in applications
-                        </CardText>
-                        <CardActions border>
-                            <Button colored href="https://github.com/TitusBuchanan/Passport">Github</Button>
-                        </CardActions>
-                        <CardMenu style={{color: '#fff'}}>
-                            <IconButton name='share' />
-                        </CardMenu>
-                </Card>
-                <Card shadow={5} style={{ minWidth:'450', margin:'auto' }}>
-                    <CardTitle style={{color: '#fff', height:'176px', background: 'url(https://miro.medium.com/max/1440/1*ahpxPO0jLGb9EWrY2qQPhg.jpeg) center/cover'}}></CardTitle>
-                        <CardText >
-                        JavaScript HackerRank problem completed using JS
-                        </CardText>
-                        <CardActions border>
-                            <Button colored href="https://github.com/TitusBuchanan/HackerRank">Github</Button>
-                        </CardActions>
-                        <CardMenu style={{color: '#fff'}}>
-                            <IconButton name='share' />
-                        </CardMenu>
-                </Card>
-           </div>
-        )
-    } else if(this.state.activeTab === 2) {
-        return (
-            <div className="projects-grid">
-            <Card shadow={5} style={{ minWidth:'450', margin:'auto' }}>
-                <CardTitle style={{color: '#fff', height:'176px', background: 'url(https://i.pcmag.com/imagery/reviews/02Q6yxveinggAu3PomearaV-7..v_1569481734.jpg) center/cover'}}></CardTitle>
-                    <CardText >
-                        Agile Men Stack Project using MongoDB,Express, And NodeJS
-                    </CardText>
-                    <CardActions border>
-                        <Button colored href="https://github.com/TitusBuchanan/NewApiTeamProject">Github</Button>
-                    </CardActions>
-                    <CardMenu style={{color: '#fff'}}>
-                        <IconButton name='share' />
-                    </CardMenu>
-            </Card>
-            <Card shadow={5} style={{ minWidth:'450', margin:'auto' }}>
-                <CardTitle style={{color: '#fff', height:'176px', background: 'url(https://i.pcmag.com/imagery/reviews/02Q6yxveinggAu3PomearaV-7..v_1569481734.jpg) center/cover'}}></CardTitle>
-                    <CardText >
-                    Scrum Men Stack Project using MongoDB,Express, And NodeJS
-                    </CardText>
-                    <CardActions border>
-                        <Button colored href="https://github.com/TitusBuchanan/menStack-1">Github</Button>
-                    </CardActions>
-                    <CardMenu style={{color: '#fff'}}>
-                        <IconButton name='share' />
-                    </CardMenu>
-            </Card>
-            <Card shadow={5} style={{ minWidth:'450', margin:'auto' }}>
-                <CardTitle style={{color: '#fff', height:'176px', background: 'url(https://i.pcmag.com/imagery/reviews/02Q6yxveinggAu3PomearaV-7..v_1569481734.jpg) center/cover'}}>React Project #3</CardTitle>
-                    <CardText >
-                        Solo Men Stack Project using MongoDB,Express, And NodeJS
-                    </CardText>
-                    <CardActions border>
-                        <Button colored href="https://github.com/TitusBuchanan/ReactProjects">Github</Button>
-                    </CardActions>
-                    <CardMenu style={{color: '#fff'}}>
-                        <IconButton name='share' />
-                    </CardMenu>
-            </Card>
-       </div>
-        )
-    }else if(this.state.activeTab === 3) {
-        return (
-            <div className="projects-grid">
-            <Card shadow={5} style={{ minWidth:'450', margin:'auto' }}>
-                <CardTitle style={{color: '#fff', height:'176px', background: 'url(https://hackernoon.com/drafts/ar1wv331n.png) center/cover'}}></CardTitle>
-                    <CardText >
-                        Coming Soon....
-                    </CardText>
-                    <CardActions border>
-                        <Button colored href="https://github.com/TitusBuchanan">Github</Button>
-                    </CardActions>
-                    <CardMenu style={{color: '#fff'}}>
-                        <IconButton name='share' />
-                    </CardMenu>
-            </Card>
-            <Card shadow={5} style={{ minWidth:'450', margin:'auto' }}>
-                <CardTitle style={{color: '#fff', height:'176px', background: 'url(https://hackernoon.com/drafts/ar1wv331n.png) center/cover'}}></CardTitle>
-                    <CardText >
-                    Coming Soon....
-                    </CardText>
-                    <CardActions border>
-                        <Button colored href="https://github.com/TitusBuchanan">Github</Button>
-                    </CardActions>
-                    <CardMenu style={{color: '#fff'}}>
-                        <IconButton name='share' />
-                    </CardMenu>
-            </Card>
-            <Card shadow={5} style={{ minWidth:'450', margin:'auto' }}>
-                <CardTitle style={{color: '#fff', height:'176px', background: 'url(https://hackernoon.com/drafts/ar1wv331n.png) center/cover'}}>React Project #3</CardTitle>
-                    <CardText >
-                    Coming Soon....
-                    </CardText>
-                    <CardActions border>
-                        <Button colored href="https://github.com/TitusBuchanan">Github</Button>
-                    </CardActions>
-                    <CardMenu style={{color: '#fff'}}>
-                        <IconButton name='share' />
-                    </CardMenu>
-            </Card>
-       </div>
-        )
-    }
-   }
-    
-    render(){
-        return(
-            <div className="category-tabs">
-                <Tabs activeTab={this.state.activeTab} onChange={(tabId) => this.setState({activeTab: tabId })} ripple>
-                <Tab>React</Tab>
-                <Tab>JavaScript</Tab>
-                <Tab>MongoDB</Tab>
-                <Tab>MERN</Tab>
-                </Tabs>
-
-                
-                    <Grid >
-                        <Cell col={12}>
-                            <div className="content">{this.toggleCategories()}</div>
-                        </Cell>
-                    </Grid>
-                    
-                
-            </div>
-        )
-    }
-};
-
+          <div className="proj-grid">
+            {filtered.map((p,i) => (
+              <Reveal key={this.state.active+'-'+i} delay={Math.min(i%4+1, 4)}>
+                <a className="proj-cell" href={p.link} target="_blank" rel="noopener noreferrer">
+                  <div className="proj-cell-idx">{String(i+1).padStart(2,'0')}</div>
+                  <span className="proj-cell-arrow">↗</span>
+                  <h3>{p.title}</h3>
+                  <p>{p.desc}</p>
+                  <div className="proj-tags">{p.tags.map(t => <span className="proj-tag" key={t}>{t}</span>)}</div>
+                </a>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
 
 export default Projects;
