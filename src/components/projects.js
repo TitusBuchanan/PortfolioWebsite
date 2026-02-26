@@ -1,17 +1,19 @@
 import React, {Component} from 'react';
 
+const GH = 'https://github.com/TitusBuchanan/PortfolioWebsite/tree/cursor/development-environment-setup-cade/projects';
+
 const projects = [
   {cat:'web',title:'MyResu-Me',desc:'Full-stack resume builder platform — fully responsible for development. Enables users to create professional resumes with modern templates.',tags:['Full Stack','Web App','Development'],link:'https://www.myresu-me.com'},
-  {cat:'cloud',title:'AWS Multi-Region Infra',desc:'Terraform-based multi-region AWS infrastructure with EC2, S3, RDS. Reduced provisioning by 40%.',tags:['Terraform','AWS','EC2'],link:'https://github.com/TitusBuchanan'},
-  {cat:'cloud',title:'Serverless Event Pipeline',desc:'Lambda serverless architecture for event processing, reducing infrastructure costs by 25%.',tags:['Lambda','CloudFormation','S3'],link:'https://github.com/TitusBuchanan'},
-  {cat:'cloud',title:'VPC Network Architecture',desc:'Secure VPC with public/private subnets, NAT gateways, security groups, and IAM policies.',tags:['AWS','VPC','IAM'],link:'https://github.com/TitusBuchanan'},
-  {cat:'cicd',title:'Jenkins CI/CD Pipeline',desc:'End-to-end pipeline using Jenkins, Docker, and GitHub webhooks. Accelerated releases by 30%.',tags:['Jenkins','Docker','Groovy'],link:'https://github.com/TitusBuchanan'},
-  {cat:'cicd',title:'GitLab CI Multi-Stage',desc:'Multi-stage GitLab CI with automated testing, security scanning, and blue-green deploys.',tags:['GitLab CI','Docker','Bash'],link:'https://github.com/TitusBuchanan'},
-  {cat:'k8s',title:'EKS Microservices',desc:'Kubernetes platform on EKS achieving 99.9% availability across multi-region deployments.',tags:['Kubernetes','EKS','Helm'],link:'https://github.com/TitusBuchanan'},
-  {cat:'k8s',title:'Cluster Monitoring Stack',desc:'Prometheus + Grafana observability for K8s clusters, improving incident detection by 50%.',tags:['Prometheus','Grafana'],link:'https://github.com/TitusBuchanan'},
-  {cat:'auto',title:'Ansible Config Mgmt',desc:'Ansible playbooks for automated server provisioning and configuration management.',tags:['Ansible','Python','YAML'],link:'https://github.com/TitusBuchanan'},
-  {cat:'auto',title:'Infra Automation Scripts',desc:'Python and Bash automation for cloud resource management, backups, and health checks.',tags:['Python','Bash','AWS CLI'],link:'https://github.com/TitusBuchanan'},
-  {cat:'k8s',title:'IoT Firmware Deploy',desc:'Docker + Azure IoT firmware update system, reducing deployment windows by 35%.',tags:['Docker','Azure','Ubuntu'],link:'https://github.com/TitusBuchanan'},
+  {cat:'cloud',title:'AWS Multi-Region Infra',desc:'Terraform-based multi-region AWS infrastructure with EC2, S3, RDS, and ELB. Modular design with prod/staging environments.',tags:['Terraform','AWS','EC2','RDS'],link:GH+'/aws-multi-region-infra'},
+  {cat:'cloud',title:'Serverless Event Pipeline',desc:'AWS SAM pipeline: S3 events → Lambda → SNS → SQS → DynamoDB. Full event-driven architecture with dead-letter queues.',tags:['Lambda','SAM','SNS','SQS'],link:GH+'/serverless-event-pipeline'},
+  {cat:'cloud',title:'VPC Network Architecture',desc:'Production VPC with 3-tier subnets, HA NAT gateways, NACLs, flow logs, and security groups for web/app/db tiers.',tags:['Terraform','VPC','IAM'],link:GH+'/vpc-network-architecture'},
+  {cat:'cicd',title:'Jenkins CI/CD Pipeline',desc:'Declarative pipeline: lint → test → Docker build → ECR push → ECS deploy with rollback scripts and approval gates.',tags:['Jenkins','Docker','ECS'],link:GH+'/jenkins-cicd-pipeline'},
+  {cat:'cicd',title:'GitLab CI Multi-Stage',desc:'7-stage pipeline with SAST/DAST security scanning, Trivy container scan, and blue-green ECS deployment.',tags:['GitLab CI','Trivy','Blue-Green'],link:GH+'/gitlab-ci-multistage'},
+  {cat:'k8s',title:'EKS Microservices',desc:'EKS cluster with Terraform, Helm charts, HPA, network policies, and spot/on-demand mixed node groups.',tags:['EKS','Helm','Terraform'],link:GH+'/eks-microservices'},
+  {cat:'k8s',title:'Cluster Monitoring Stack',desc:'Prometheus + Grafana + Alertmanager with 18 alert rules, custom dashboards, and Kubernetes service discovery.',tags:['Prometheus','Grafana','K8s'],link:GH+'/cluster-monitoring'},
+  {cat:'auto',title:'Ansible Config Mgmt',desc:'Ansible roles for nginx, Docker CE, and monitoring agents with inventory management and idempotent playbooks.',tags:['Ansible','Nginx','Docker'],link:GH+'/ansible-config-mgmt'},
+  {cat:'auto',title:'Infra Automation Scripts',desc:'Python + Bash toolkit: AWS resource audit, EBS backup manager, cost optimizer, SSL cert monitor, health checker.',tags:['Python','Bash','Boto3'],link:GH+'/infra-automation-scripts'},
+  {cat:'k8s',title:'IoT Firmware Deploy',desc:'Docker-based firmware build pipeline with Azure Blob storage, IoT Hub integration, and canary rollout.',tags:['Docker','Azure','IoT Hub'],link:GH+'/iot-firmware-deploy'},
 ];
 
 const filters = [{key:'all',label:'All'},{key:'web',label:'Web Apps'},{key:'cloud',label:'Cloud'},{key:'cicd',label:'CI/CD'},{key:'k8s',label:'Kubernetes'},{key:'auto',label:'Automation'}];
