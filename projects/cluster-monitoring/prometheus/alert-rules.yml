@@ -1,0 +1,199 @@
+groups:
+  - name: node-alerts
+    rules:
+      - alert: NodeDown
+        expr: up{job="kubernetes-nodes"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "Node {{ $labels.instance }} is down"
+          description: "Node {{ $labels.instance }} has been unreachable for more than 5 minutes."
+          runbook_url: "https://wiki.example.com/runbooks/node-down"
+
+      - alert: NodeHighCPU
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 10m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage on {{ $labels.instance }} has been above 85% for more than 10 minutes. Current value: {{ $value | printf \"%.1f\" }}%."
+
+      - alert: NodeCriticalCPU
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+        for: 5m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "Critical CPU usage on {{ $labels.instance }}"
+          description: "CPU usage on {{ $labels.instance }} has been above 95% for more than 5 minutes. Current value: {{ $value | printf \"%.1f\" }}%."
+
+      - alert: NodeHighMemory
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage on {{ $labels.instance }} is above 85%. Current value: {{ $value | printf \"%.1f\" }}%."
+
+      - alert: NodeCriticalMemory
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 95
+        for: 5m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "Critical memory usage on {{ $labels.instance }}"
+          description: "Memory usage on {{ $labels.instance }} is above 95%. Current value: {{ $value | printf \"%.1f\" }}%."
+
+      - alert: NodeDiskPressure
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "Disk pressure on {{ $labels.instance }}"
+          description: "Disk usage on {{ $labels.instance }} ({{ $labels.mountpoint }}) is above 85%. Current value: {{ $value | printf \"%.1f\" }}%."
+
+      - alert: NodeDiskCritical
+        expr: (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})) * 100 > 95
+        for: 5m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "Critical disk usage on {{ $labels.instance }}"
+          description: "Disk usage on {{ $labels.instance }} ({{ $labels.mountpoint }}) is above 95%. Immediate action required. Current value: {{ $value | printf \"%.1f\" }}%."
+
+      - alert: NodeDiskWillFillIn24Hours
+        expr: predict_linear(node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"}[6h], 24 * 3600) < 0
+        for: 30m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "Disk on {{ $labels.instance }} will fill within 24 hours"
+          description: "Based on current trends, {{ $labels.mountpoint }} on {{ $labels.instance }} will run out of space within 24 hours."
+
+  - name: pod-alerts
+    rules:
+      - alert: PodCrashLooping
+        expr: rate(kube_pod_container_status_restarts_total[15m]) * 60 * 5 > 0
+        for: 15m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash looping"
+          description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) has been restarting frequently."
+
+      - alert: PodHighRestartCount
+        expr: kube_pod_container_status_restarts_total > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High restart count for {{ $labels.namespace }}/{{ $labels.pod }}"
+          description: "Container {{ $labels.container }} in pod {{ $labels.namespace }}/{{ $labels.pod }} has restarted {{ $value }} times."
+
+      - alert: PodNotReady
+        expr: kube_pod_status_ready{condition="true"} == 0
+        for: 15m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} not ready"
+          description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready state for more than 15 minutes."
+
+      - alert: PodOOMKilled
+        expr: kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1
+        for: 0m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Container OOM killed in {{ $labels.namespace }}/{{ $labels.pod }}"
+          description: "Container {{ $labels.container }} in pod {{ $labels.namespace }}/{{ $labels.pod }} was OOM killed. Consider increasing memory limits."
+
+      - alert: ContainerHighCPU
+        expr: (sum(rate(container_cpu_usage_seconds_total{container!="POD",container!=""}[5m])) by (namespace, pod, container) / sum(kube_pod_container_resource_limits{resource="cpu"}) by (namespace, pod, container)) * 100 > 90
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High CPU in {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }}"
+          description: "Container {{ $labels.container }} in {{ $labels.namespace }}/{{ $labels.pod }} is using {{ $value | printf \"%.1f\" }}% of its CPU limit."
+
+      - alert: ContainerHighMemory
+        expr: (sum(container_memory_working_set_bytes{container!="POD",container!=""}) by (namespace, pod, container) / sum(kube_pod_container_resource_limits{resource="memory"}) by (namespace, pod, container)) * 100 > 90
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High memory in {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }}"
+          description: "Container {{ $labels.container }} in {{ $labels.namespace }}/{{ $labels.pod }} is using {{ $value | printf \"%.1f\" }}% of its memory limit."
+
+  - name: deployment-alerts
+    rules:
+      - alert: DeploymentReplicasMismatch
+        expr: kube_deployment_spec_replicas != kube_deployment_status_ready_replicas
+        for: 15m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} replica mismatch"
+          description: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has not matched the expected number of replicas for more than 15 minutes."
+
+      - alert: DeploymentGenerationMismatch
+        expr: kube_deployment_status_observed_generation != kube_deployment_metadata_generation
+        for: 15m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} generation mismatch"
+          description: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has failed to update and the generation is mismatched."
+
+      - alert: HPAMaxedOut
+        expr: kube_horizontalpodautoscaler_status_current_replicas == kube_horizontalpodautoscaler_spec_max_replicas
+        for: 15m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler }} at max replicas"
+          description: "HPA {{ $labels.namespace }}/{{ $labels.horizontalpodautoscaler }} has been running at max replicas for 15 minutes."
+
+  - name: cluster-alerts
+    rules:
+      - alert: KubernetesAPIServerErrors
+        expr: sum(rate(apiserver_request_total{code=~"5.."}[5m])) / sum(rate(apiserver_request_total[5m])) * 100 > 3
+        for: 10m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "Kubernetes API server high error rate"
+          description: "Kubernetes API server is experiencing {{ $value | printf \"%.1f\" }}% error rate."
+
+      - alert: PersistentVolumeSpaceLow
+        expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes < 0.15
+        for: 10m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "PersistentVolume {{ $labels.persistentvolumeclaim }} running low on space"
+          description: "PV {{ $labels.persistentvolumeclaim }} in {{ $labels.namespace }} has less than 15% space remaining."
