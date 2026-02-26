@@ -1,26 +1,10 @@
 ## Cursor Cloud specific instructions
 
-This is a React 16 portfolio SPA built with Create React App (`react-scripts 3.4.1`). No database, Docker, or backend API required.
+This repository contains CI/CD pipeline template projects under `projects/`. They are infrastructure-as-code definitions (Jenkinsfile, GitLab CI YAML, Dockerfiles, shell scripts, Makefiles) — not runnable applications. There are no application dependencies to install and no dev servers to start.
 
-### Node.js version requirement
+### Validation
 
-This project requires **Node.js 14** (`nvm use 14`). The `react-scripts 3.4.1` bundler is incompatible with Node 18+. The update script handles this automatically via nvm.
-
-### Commands
-
-See `README.md` for standard CRA commands. Key ones:
-
-- **Dev server:** `BROWSER=none npm start` (port 3000, hot-reload)
-- **Lint:** `npx eslint src/`
-- **Tests:** `CI=true npm test -- --watchAll=false`
-- **Build:** `npm run build`
-- **Production server:** `node server.js` (serves `build/` on port 5000)
-
-### Known issues (pre-existing)
-
-- `npm test` fails because `App.test.js` renders `<App>` without wrapping it in a `<Router>`, causing an invariant violation. This is a pre-existing bug in the test file, not an environment issue.
-- ESLint reports 1 warning: unused `Fade` import in `src/components/aboutme.js`.
-
-### Terraform/AWS projects
-
-The `projects/` directory contains Terraform and SAM IaC projects (portfolio showcase items). They are not runnable services — they are deployable AWS infrastructure code. To validate Terraform projects locally: `terraform init -backend=false && terraform validate`. The SAM project (`serverless-event-pipeline`) uses `template.yaml` with CloudFormation intrinsic functions.
+- **Shell scripts**: validate syntax with `bash -n <script>`.
+- **YAML files**: validate with `python3 -c "import yaml; yaml.safe_load(open('<file>'))"`.
+- **Makefiles**: verify expected targets exist by inspecting the file.
+- Docker is not available in the cloud agent environment, so `docker build` and `docker compose` commands cannot be run.
