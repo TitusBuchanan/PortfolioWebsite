@@ -20,3 +20,7 @@ See `README.md` for standard CRA commands. Key ones:
 
 - `npm test` fails because `App.test.js` renders `<App>` without wrapping it in a `<Router>`, causing an invariant violation. This is a pre-existing bug in the test file, not an environment issue.
 - ESLint reports 1 warning: unused `Fade` import in `src/components/aboutme.js`.
+
+### Terraform/AWS projects
+
+The `projects/` directory contains Terraform and SAM IaC projects (portfolio showcase items). They are not runnable services — they are deployable AWS infrastructure code. To validate Terraform projects locally: `terraform init -backend=false && terraform validate`. The SAM project (`serverless-event-pipeline`) uses `template.yaml` with CloudFormation intrinsic functions.
