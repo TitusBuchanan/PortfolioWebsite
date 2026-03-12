@@ -1,0 +1,47 @@
+// Single source of truth for all site data.
+// Import from here instead of defining inline in components.
+
+export const MARQUEE_SKILLS = [
+  'AWS','Terraform','Kubernetes','Docker','Jenkins','Python','Bash',
+  'Ansible','Prometheus','Grafana','GitHub Actions','Helm','Linux',
+  'Azure','CloudFormation','EKS','Lambda','PostgreSQL','MongoDB','Jira',
+];
+
+export const ABOUT_TAGS = [
+  'AWS','Terraform','Kubernetes','Docker','Jenkins','Python','Bash','Ansible',
+  'Prometheus','Grafana','CloudWatch','GitHub Actions','Helm','Linux','Azure',
+  'CloudFormation','IAM','VPC','PostgreSQL','MongoDB','Jira','Agile',
+];
+
+export const RESUME_SKILLS = [
+  'AWS','EC2','S3','EKS','Lambda','CloudFormation','Terraform','Azure',
+  'Docker','Kubernetes','Helm','Jenkins','GitLab CI','GitHub Actions',
+  'Prometheus','Grafana','CloudWatch','Ansible','Python','Bash','Groovy',
+  'Linux','PostgreSQL','MongoDB','Jira','VMware',
+];
+
+const GH =
+  'https://github.com/TitusBuchanan/PortfolioWebsite/tree/cursor/development-environment-setup-cade/projects';
+
+export const PROJECTS = [
+  {cat:'web', title:'MyResu-Me',                desc:'Full-stack resume builder platform — fully responsible for development. Modern templates and professional export.',                                                                tags:['Full Stack','Web App','Development'],    link:'https://www.myresu-me.com'},
+  {cat:'cloud',title:'AWS Multi-Region Infra',  desc:'Terraform-based multi-region AWS infrastructure with EC2, S3, RDS, and ELB. Modular design with prod/staging environments.',                                                  tags:['Terraform','AWS','EC2','RDS'],           link:GH+'/aws-multi-region-infra'},
+  {cat:'cloud',title:'Serverless Event Pipeline',desc:'AWS SAM pipeline: S3 events → Lambda → SNS → SQS → DynamoDB. Full event-driven architecture.',                                                                               tags:['Lambda','SAM','SNS','SQS'],              link:GH+'/serverless-event-pipeline'},
+  {cat:'cloud',title:'VPC Network Architecture', desc:'Production VPC with 3-tier subnets, HA NAT gateways, NACLs, flow logs, and security groups.',                                                                                 tags:['Terraform','VPC','IAM'],                 link:GH+'/vpc-network-architecture'},
+  {cat:'cicd', title:'Jenkins CI/CD Pipeline',  desc:'Declarative pipeline: lint → test → Docker build → ECR push → ECS deploy with rollback and approval gates.',                                                                  tags:['Jenkins','Docker','ECS'],                link:GH+'/jenkins-cicd-pipeline'},
+  {cat:'cicd', title:'GitLab CI Multi-Stage',   desc:'7-stage pipeline with SAST/DAST security scanning, Trivy container scan, and blue-green deployment.',                                                                         tags:['GitLab CI','Trivy','Blue-Green'],        link:GH+'/gitlab-ci-multistage'},
+  {cat:'k8s',  title:'EKS Microservices',       desc:'EKS cluster with Terraform, Helm charts, HPA, network policies, and mixed node groups.',                                                                                      tags:['EKS','Helm','Terraform'],                link:GH+'/eks-microservices'},
+  {cat:'k8s',  title:'Cluster Monitoring Stack', desc:'Prometheus + Grafana + Alertmanager with 18 alert rules, dashboards, and K8s service discovery.',                                                                            tags:['Prometheus','Grafana','K8s'],            link:GH+'/cluster-monitoring'},
+  {cat:'auto', title:'Ansible Config Mgmt',     desc:'Ansible roles for nginx, Docker CE, and monitoring agents with inventory management.',                                                                                         tags:['Ansible','Nginx','Docker'],              link:GH+'/ansible-config-mgmt'},
+  {cat:'auto', title:'Infra Automation Scripts', desc:'Python + Bash toolkit: AWS audit, EBS backup, cost optimizer, SSL cert monitor, health checker.',                                                                             tags:['Python','Bash','Boto3'],                 link:GH+'/infra-automation-scripts'},
+  {cat:'k8s',  title:'IoT Firmware Deploy',     desc:'Docker-based firmware build pipeline with Azure Blob storage, IoT Hub integration, and canary rollout.',                                                                      tags:['Docker','Azure','IoT Hub'],              link:GH+'/iot-firmware-deploy'},
+];
+
+export const FILTERS = [
+  {key:'all',   label:'All'},
+  {key:'web',   label:'Web Apps'},
+  {key:'cloud', label:'Cloud'},
+  {key:'cicd',  label:'CI/CD'},
+  {key:'k8s',   label:'Kubernetes'},
+  {key:'auto',  label:'Automation'},
+];

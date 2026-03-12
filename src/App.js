@@ -1,5 +1,4 @@
 import React from 'react';
-import {Layout, Content} from 'react-mdl';
 import './App.css';
 import Main from './components/main';
 import { Link } from 'react-router-dom';
@@ -16,11 +15,7 @@ function App() {
           <Link className="nav-link" to="/contact">Contact</Link>
         </div>
       </nav>
-      <Layout>
-        <Content>
-          <Main />
-        </Content>
-      </Layout>
+      <Main />
     </div>
   );
 }

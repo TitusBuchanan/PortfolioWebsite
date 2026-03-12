@@ -18,6 +18,16 @@
   --fh: 'Space Grotesk', sans-serif;
   --fb: 'Inter', sans-serif;
   --fm: 'JetBrains Mono', monospace;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Respect OS-level motion preferences — improves accessibility and perf on low-end devices. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 html { scroll-behavior: smooth; }

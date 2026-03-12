@@ -2,11 +2,6 @@
    ELITE PORTFOLIO — DYNAMIC + ANIMATED
    ============================================= */
 
-.mdl-layout__header,.mdl-layout__drawer,.mdl-layout__drawer-button,.mdl-layout__obfuscator{display:none!important}
-.mdl-layout__content{margin-left:0!important;background:var(--bg)!important}
-.mdl-layout{overflow-y:visible!important}
-.mdl-tabs__tab-bar,.mdl-tab__bar-indicator{display:none!important}
-
 /* === NAV === */
 .nav{
   position:fixed;top:0;left:0;right:0;z-index:100;
@@ -237,6 +232,7 @@
   font-family:var(--fm);font-size:0.62rem;text-transform:uppercase;letter-spacing:0.5px;
   color:var(--white-m);border:1px solid var(--border);padding:6px 14px;
   transition:all 0.3s cubic-bezier(0.16,1,0.3,1);position:relative;overflow:hidden;
+  animation-delay:var(--skill-delay, 0s);
 }
 .skill-tag::before{
   content:'';position:absolute;inset:0;background:var(--orange);
