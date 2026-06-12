@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>THE ONE-WINGED ANGEL — Open World Action Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --orange:#e8a020; --mako:#7cfc9a; --red:#e84040; --purple:#b070ff;
+    --white:#f0ede6; --dim:rgba(240,237,230,.55);
+    --fd:'Bebas Neue',Impact,sans-serif; --fm:'JetBrains Mono',monospace; --fh:'Space Grotesk',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;background:#04040a;color:var(--white);font-family:var(--fm)}
+  canvas{display:block}
+  #hud,#title,#death,#win,#pause{position:fixed;inset:0;pointer-events:none}
+  .hidden{display:none!important}
+
+  /* ===== BARS ===== */
+  #bars{position:fixed;left:28px;bottom:26px;width:300px}
+  .bar{height:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);margin-bottom:6px;position:relative;overflow:hidden}
+  .bar>div{height:100%;width:100%;transform-origin:left;transition:transform .12s linear}
+  #hpFill{background:linear-gradient(90deg,#3fae5a,var(--mako))}
+  #stBar{width:220px;height:6px}#stFill{background:linear-gradient(90deg,#c98c14,var(--orange))}
+  #spBar{width:260px;height:6px}#spFill{background:linear-gradient(90deg,#7030c0,var(--purple))}
+  #spBar.full{box-shadow:0 0 14px var(--purple)}
+  #lvlRow{font-size:11px;letter-spacing:2px;color:var(--dim);margin-bottom:8px}
+  #lvlRow b{color:var(--orange);font-size:14px}
+
+  /* ===== OBJECTIVE ===== */
+  #objBox{position:fixed;left:28px;top:24px;max-width:420px}
+  #objLabel{font-size:10px;letter-spacing:4px;color:var(--orange)}
+  #obj{font-family:var(--fh);font-size:17px;margin-top:4px;text-shadow:0 2px 8px #000}
+  #objDist{font-size:11px;color:var(--mako);margin-top:4px;letter-spacing:1px}
+
+  /* ===== COMBO / KILLS ===== */
+  #combo{position:fixed;right:34px;top:38%;text-align:right;opacity:0;transition:opacity .3s}
+  #comboN{font-family:var(--fd);font-size:64px;line-height:1;color:var(--orange);text-shadow:0 0 24px rgba(232,160,32,.5)}
+  #comboT{font-size:11px;letter-spacing:4px;color:var(--dim)}
+  #kills{position:fixed;right:28px;top:24px;font-size:11px;letter-spacing:2px;color:var(--dim);text-align:right}
+  #kills b{color:var(--white)}
+
+  /* ===== BOSS ===== */
+  #boss{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;width:min(620px,70vw);text-align:center}
+  #bossName{font-family:var(--fd);font-size:22px;letter-spacing:6px;color:var(--red);text-shadow:0 0 18px rgba(232,64,64,.5)}
+  #bossBar{height:8px;background:rgba(255,255,255,.08);border:1px solid rgba(232,64,64,.4);margin-top:4px}
+  #bossFill{height:100%;background:linear-gradient(90deg,#7a1020,var(--red));transform-origin:left;transition:transform .15s linear}
+
+  /* ===== RETICLE / MSG / PROMPT ===== */
+  #dot{position:fixed;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;background:rgba(255,255,255,.6)}
+  #lock{position:fixed;width:34px;height:34px;margin:-17px;border:1.5px solid var(--red);transform:rotate(45deg);box-shadow:0 0 12px rgba(232,64,64,.6)}
+  #msg{position:fixed;left:50%;top:30%;transform:translateX(-50%);font-family:var(--fd);font-size:42px;letter-spacing:8px;color:var(--white);text-shadow:0 0 30px rgba(124,252,154,.6);opacity:0;transition:opacity .4s;text-align:center;white-space:nowrap}
+  #hint{position:fixed;left:50%;bottom:140px;transform:translateX(-50%);font-size:12px;letter-spacing:2px;color:var(--mako);text-shadow:0 0 10px #000;opacity:0;transition:opacity .3s}
+
+  /* ===== SCREEN FX ===== */
+  #vig{position:fixed;inset:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+  #dmgFx{position:fixed;inset:0;background:radial-gradient(ellipse at center,transparent 45%,rgba(200,20,20,.45) 100%);opacity:0;transition:opacity .5s}
+  #ultFx{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(176,112,255,.12),transparent 70%);opacity:0;transition:opacity .6s}
+  #dmgLayer{position:fixed;inset:0;overflow:hidden}
+  .dmgNum{position:absolute;font-family:var(--fd);font-size:24px;color:#fff;text-shadow:0 0 8px rgba(232,160,32,.9),0 2px 2px #000;will-change:transform,opacity}
+  .dmgNum.crit{font-size:34px;color:var(--orange)}
+  .dmgNum.hurt{color:var(--red)}
+
+  /* ===== SCREENS ===== */
+  #title,#death,#win,#pause{display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(2,2,8,.82);pointer-events:auto;text-align:center;backdrop-filter:blur(3px)}
+  .meta{font-size:11px;letter-spacing:6px;color:var(--orange);margin-bottom:14px}
+  .big{font-family:var(--fd);font-size:clamp(54px,10vw,120px);line-height:.95;letter-spacing:4px}
+  .big .grad{background:linear-gradient(135deg,#e8a020,#f0c050);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-family:var(--fh);color:var(--dim);margin-top:14px;font-size:15px;max-width:560px}
+  .start{margin-top:38px;font-size:13px;letter-spacing:5px;color:var(--white);border:1px solid rgba(255,255,255,.25);padding:14px 38px;cursor:pointer;background:none;font-family:var(--fm);transition:all .25s}
+  .start:hover{border-color:var(--orange);color:var(--orange);box-shadow:0 0 24px rgba(232,160,32,.25)}
+  #controls{margin-top:34px;display:grid;grid-template-columns:auto auto;gap:5px 22px;font-size:11.5px;color:var(--dim);letter-spacing:1px;text-align:left}
+  #controls b{color:var(--white);font-weight:400}
+  .fan{margin-top:26px;font-size:9.5px;letter-spacing:1px;color:rgba(240,237,230,.3);max-width:520px}
+  #death .big{color:var(--red)}
+  #win .big{color:var(--mako)}
+  #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#04040a;font-size:12px;letter-spacing:6px;color:var(--dim);z-index:50}
+</style>
+</head>
+<body>
+<div id="loading">SUMMONING THE PLANET . . .</div>
+
+<div id="hud" class="hidden">
+  <div id="vig"></div><div id="dmgFx"></div><div id="ultFx"></div>
+  <div id="objBox">
+    <div id="objLabel">// OBJECTIVE</div>
+    <div id="obj">—</div>
+    <div id="objDist"></div>
+  </div>
+  <div id="kills">SLAIN <b id="killN">0</b></div>
+  <div id="combo"><div id="comboN">0</div><div id="comboT">HITS</div></div>
+  <div id="boss" class="hidden"><div id="bossName"></div><div id="bossBar"><div id="bossFill"></div></div></div>
+  <div id="bars">
+    <div id="lvlRow">LV <b id="lvl">1</b> &nbsp;<span id="xpT"></span></div>
+    <div class="bar"><div id="hpFill"></div></div>
+    <div class="bar" id="stBar"><div id="stFill"></div></div>
+    <div class="bar" id="spBar"><div id="spFill"></div></div>
+  </div>
+  <div id="dot"></div>
+  <div id="lock" class="hidden"></div>
+  <div id="msg"></div>
+  <div id="hint"></div>
+  <div id="dmgLayer"></div>
+</div>
+
+<div id="title" class="hidden">
+  <div class="meta">A FINAL FANTASY VII FAN EXPERIENCE</div>
+  <div class="big">THE ONE-WINGED <span class="grad">ANGEL</span></div>
+  <div class="sub">Embody Sephiroth. Carve through the wilds of the Planet, awaken the Mako crystals, and descend into the Forgotten Sanctum.</div>
+  <button class="start" id="btnStart">CLICK TO BEGIN</button>
+  <div id="controls">
+    <span><b>WASD</b> — move</span><span><b>MOUSE</b> — camera</span>
+    <span><b>LMB</b> — slash combo</span><span><b>RMB</b> — heavy cleave</span>
+    <span><b>SHIFT</b> — sprint</span><span><b>SPACE</b> — dodge roll</span>
+    <span><b>Q</b> — lock-on</span><span><b>1</b> — Octaslash (35 SP)</span>
+    <span><b>2</b> — Supernova (100 SP)</span><span><b>ESC</b> — pause</span>
+  </div>
+  <div class="fan">Non-commercial fan tribute. FINAL FANTASY and Sephiroth are property of Square Enix Co., Ltd. Built with Three.js — best on desktop Chrome/Edge with a dedicated GPU.</div>
+</div>
+
+<div id="pause" class="hidden">
+  <div class="big" style="font-size:54px">PAUSED</div>
+  <button class="start" id="btnResume">RESUME</button>
+</div>
+
+<div id="death" class="hidden">
+  <div class="big">FELLED</div>
+  <div class="sub">Even the chosen of Jenova can falter…</div>
+  <button class="start" id="btnRetry">RISE AGAIN</button>
+</div>
+
+<div id="win" class="hidden">
+  <div class="meta">THE SANCTUM FALLS SILENT</div>
+  <div class="big">THE PROMISED <span class="grad">LAND</span></div>
+  <div class="sub" id="winStats"></div>
+  <button class="start" id="btnAgain">WANDER AGAIN</button>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three.module.js",
+    "three/addons/": "./vendor/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="js/game.js"></script>
+</body>
+</html>

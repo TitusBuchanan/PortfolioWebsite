@@ -4,6 +4,7 @@ import Reveal from './Reveal';
 const GH = 'https://github.com/TitusBuchanan/PortfolioWebsite/tree/cursor/development-environment-setup-cade/projects';
 
 const projects = [
+  {cat:'web',title:'The One-Winged Angel — 3D Game',desc:'Open-world 3D action game playable in the browser. Procedural terrain, God of War-style combat, bosses, puzzles, HDR bloom and a full day/night cycle — built from scratch with Three.js and WebGL.',tags:['Three.js','WebGL','GLSL','Game Dev'],link:'/game/'},
   {cat:'web',title:'MyResu-Me',desc:'Full-stack resume builder platform — fully responsible for development. Modern templates and professional export.',tags:['Full Stack','Web App','Development'],link:'https://www.myresu-me.com'},
   {cat:'cloud',title:'AWS Multi-Region Infra',desc:'Terraform-based multi-region AWS infrastructure with EC2, S3, RDS, and ELB. Modular design with prod/staging environments.',tags:['Terraform','AWS','EC2','RDS'],link:GH+'/aws-multi-region-infra'},
   {cat:'cloud',title:'Serverless Event Pipeline',desc:'AWS SAM pipeline: S3 events → Lambda → SNS → SQS → DynamoDB. Full event-driven architecture.',tags:['Lambda','SAM','SNS','SQS'],link:GH+'/serverless-event-pipeline'},
